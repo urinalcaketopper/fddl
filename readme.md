@@ -1,6 +1,6 @@
-# Fiddle Programming Language
+# fddl Programming Language
 
-Fiddle is a small programming language inspired by various languages, designed to help learn language implementation concepts in Rust.
+fddl is a small programming language inspired by various languages, designed to help learn language implementation concepts in Rust.
 
 I have, off and on throughout the last 15 or so years attempted to learn a programming language of some sort. I could always get through the basics, but would get stuck with any real world projects. And I wouldn't know who to turn to even if I knew where to start.
 
@@ -24,7 +24,7 @@ To run the REPL:
 cargo run
 ```
 
-To run a fiddle script:
+To run a fddl script:
 
 ```sh
 cargo run path/to/script.fddl
