@@ -139,6 +139,7 @@ impl Lexer {
     }
 
     // Helper methods
+    // function to consume the current character
     fn advance(&mut self) -> char {
         let c = if self.is_at_end() {
             '\0'
@@ -149,6 +150,7 @@ impl Lexer {
         c
     }
 
+    // function to parse the current character if it matches the expected character
     fn match_char(&mut self, expected: char) -> bool {
         if self.is_at_end() {
             return false;
@@ -162,6 +164,7 @@ impl Lexer {
         true
     }
 
+    // function to parse the current character without consuming it
     fn peek(&self) -> char {
         if self.is_at_end() {
             '\0'
@@ -170,6 +173,7 @@ impl Lexer {
         }
     }
 
+    // function to parse the next character without consuming it
     fn peek_next(&self) -> char {
         if self.current + 1 >= self.source.len() {
             '\0'
@@ -178,10 +182,12 @@ impl Lexer {
         }
     }
 
+    // function to check if we've reached the end of the source
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
     }
 
+    // Function to handle different token types
     fn string(&mut self) -> Option<Token> {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
@@ -206,6 +212,7 @@ impl Lexer {
         Some(Token::StringLiteral(value))
     }
 
+    // Function to handle number literals
     fn number(&mut self) -> Option<Token> {
         while self.peek().is_ascii_digit() {
             self.advance();
@@ -228,6 +235,7 @@ impl Lexer {
         Some(Token::Number(value))
     }
 
+    // Function to handle identifiers
     fn identifier(&mut self) -> Option<Token> {
         while self.is_alphanumeric(self.peek()) || self.peek() == '_' {
             self.advance();
@@ -275,20 +283,24 @@ impl Lexer {
         Some(token)
     }
 
+    // Function to check if a character is an alphabetic character or an underscore
     fn is_alpha(&self, c: char) -> bool {
         c.is_alphabetic() || c == '_'
     }
 
+    // Function to check if a character is an alphanumeric character or an underscore
     fn is_alphanumeric(&self, c: char) -> bool {
         c.is_alphanumeric() || c == '_'
     }
 
+    // Function to handle comments and documentation
     fn line_comment(&mut self) {
         while self.peek() != '\n' && !self.is_at_end() {
             self.advance();
         }
     }
 
+    // Function to handle block comments
     fn block_comment(&mut self) {
         while !self.is_at_end() {
             if self.peek() == '*' && self.peek_next() == '/' {
@@ -304,6 +316,7 @@ impl Lexer {
         }
     }
 
+    // Function to handle comments and documentation
     fn handle_comment_or_doc(&mut self) -> Option<Token> {
         // We have matched one '#' character so far
         let mut count = 1;
@@ -348,7 +361,7 @@ impl Lexer {
         }
     }
                      
-
+    // Function to handle documentation comments
     fn doc_comment(&mut self, _kind: &str) -> Option<Token> {
         let mut comment = String::new();
         while self.peek() != '\n' && !self.is_at_end() {

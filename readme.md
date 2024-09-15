@@ -33,6 +33,12 @@ cargo run path/to/script.fddl
 ## Examples
 
 ```sh
+func main() {
+    print(`hello, world in fddl`);
+}     
+```
+
+```sh
 ##! This is a sample module
 
 module math {
@@ -56,12 +62,13 @@ This project is licensed under the MIT License.
 
 ## **Notes and Next Steps**
 
-- [x] Added first new set of tokens and features, added the first lexer tests.
+- [x] Added first new set of tokens and features, added the first `lexer` tests.
 - [ ] `parser` module is a placeholder.
 - [ ] `interpreter` module is a placeholder.
 - [ ] Implement a more robust error handling mechanism instead of using `stderr`.
 - [ ] Imlement string interpolation (backticks with `$variable`) 
 - [ ] Continue to expand tests to cover all new syntax and features.
+- [x] Made a crappy website.    
 
 ---
 

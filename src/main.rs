@@ -21,7 +21,7 @@ fn main() {
 }
 
 fn run_repl() {
-    println!("fiddle REPL");
+    println!("fddl REPL");
     loop {
         print!("> ");
         io::stdout().flush().unwrap();
