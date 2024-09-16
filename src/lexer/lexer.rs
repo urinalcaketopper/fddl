@@ -35,7 +35,7 @@ impl Lexer {
         let c = self.advance();
 
         match c {
-            '#' => self.handle_comment_or_doc(),
+            // Single-character tokens
             '(' => Some(Token::LeftParen),
             ')' => Some(Token::RightParen),
             '{' => Some(Token::LeftBrace),
@@ -46,55 +46,39 @@ impl Lexer {
             '+' => Some(Token::Plus),
             ';' => Some(Token::Semicolon),
             '*' => Some(Token::Star),
-            '%' => Some(Token::Percent),
-            '^' => Some(Token::Caret),  
             '~' => {
                 if self.match_char('=') {
                     Some(Token::TildeEqual)
                 } else {
                     Some(Token::Tilde)
                 }
+            }, 
+            '/' => {
+                if self.match_char('/') {
+                    // Line comment starting with //
+                    self.line_comment() // Generate Comment token
+                } else {
+                    Some(Token::Slash)
+                }
             },
-            '`' => Some(Token::Backtick),
-            '$' => Some(Token::Dollar),
-            '@' => Some(Token::At),
-            '?' => Some(Token::Question),
+            '#' => {
+                // Line comment starting with #
+                self.line_comment() // Generate Comment token
+            },
+
+            // One or two character tokens
             '!' => {
                 if self.match_char('=') {
                     Some(Token::BangEqual)
                 } else {
-                    Some(Token::Exclamation)
-                }
-            },
-            '|' => {
-                if self.match_char('|') {
-                    Some(Token::DoublePipe)
-                } else {
-                    Some(Token::Pipe)
-                }
-            },
-            '&' => {
-                if self.match_char('&') {
-                    Some(Token::DoubleAmpersand)
-                } else {
-                    Some(Token::Ampersand)
+                    None // Or handle as an error or another token if needed
                 }
             },
             '=' => {
                 if self.match_char('=') {
                     Some(Token::EqualEqual)
-                } else if self.match_char('>') {
-                    Some(Token::FatArrow)
                 } else {
                     Some(Token::Equal)
-                }
-            },
-            ':' => {
-                if self.match_char('=') {
-                    Some(Token::ColonEqual)
-                } else {
-                    // Handle single ':' if needed
-                    Some(Token::Colon)
                 }
             },
             '<' => {
@@ -111,26 +95,20 @@ impl Lexer {
                     Some(Token::Greater)
                 }
             },
-            '/' => {
-                if self.match_char('/') {
-                    // It's a comment, consume until end of line
-                    let mut comment = String::new();
-                    while self.peek() != '\n' && !self.is_at_end() {
-                        comment.push(self.advance());
-                    }
-                    Some(Token::Comment(comment))
-                } else {
-                    Some(Token::Slash)
-                }
-                },
-            ' ' | '\r' | '\t' => None, // Ignore whitespace
+
+            // Whitespace
+            ' ' | '\r' | '\t' => None,
             '\n' => {
                 self.line += 1;
                 None
             },
+
+            // Literals
             '"' => self.string(),
             c if c.is_ascii_digit() => self.number(),
             c if self.is_alpha(c) => self.identifier(),
+
+            // Any other character
             _ => {
                 eprintln!("Unexpected character '{}' on line {}", c, self.line);
                 None
@@ -139,18 +117,17 @@ impl Lexer {
     }
 
     // Helper methods
-    // function to consume the current character
+    // Consume the current character and return it
     fn advance(&mut self) -> char {
-        let c = if self.is_at_end() {
-            '\0'
-        } else {
-            self.source[self.current]
-        };
+        if self.is_at_end() {
+            return '\0';
+        }
+        let c = self.source[self.current];
         self.current += 1;
         c
     }
 
-    // function to parse the current character if it matches the expected character
+    // Check if the current character matches the expected character
     fn match_char(&mut self, expected: char) -> bool {
         if self.is_at_end() {
             return false;
@@ -164,7 +141,7 @@ impl Lexer {
         true
     }
 
-    // function to parse the current character without consuming it
+    // Look at current character
     fn peek(&self) -> char {
         if self.is_at_end() {
             '\0'
@@ -173,7 +150,7 @@ impl Lexer {
         }
     }
 
-    // function to parse the next character without consuming it
+    // Look ahead by one character
     fn peek_next(&self) -> char {
         if self.current + 1 >= self.source.len() {
             '\0'
@@ -182,12 +159,12 @@ impl Lexer {
         }
     }
 
-    // function to check if we've reached the end of the source
+    // Check if we have reached the end of the source
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
     }
 
-    // Function to handle different token types
+    // Function to handle string literals
     fn string(&mut self) -> Option<Token> {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
@@ -196,7 +173,6 @@ impl Lexer {
             self.advance();
         }
 
-        // Check if we've reached the end without finding a closing quote
         if self.is_at_end() {
             eprintln!("Unterminated string on line {}", self.line);
             return None;
@@ -235,7 +211,7 @@ impl Lexer {
         Some(Token::Number(value))
     }
 
-    // Function to handle identifiers
+    // Function to handle identifiers and keywords
     fn identifier(&mut self) -> Option<Token> {
         while self.is_alphanumeric(self.peek()) || self.peek() == '_' {
             self.advance();
@@ -248,132 +224,43 @@ impl Lexer {
         // Check for reserved keywords
         let token = match text.as_str() {
             "and" => Token::And,
-            "class" => Token::Class,
-            "else" => Token::Else,
-            "false" => Token::False,
-            "func" => Token::Func,
-            "for" => Token::For,
-            "if" => Token::If,
-            "nil" => Token::Nil,
             "or" => Token::Or,
-            "print" => Token::Print,
-            "return" => Token::Return,
-            "super" => Token::Super,
-            "this" => Token::This,
+            "if" => Token::If,
+            "else" => Token::Else,
             "true" => Token::True,
+            "false" => Token::False,
             "let" => Token::Let,
-            "while" => Token::While,
             "const" => Token::Const,
-            "define" => Token::Define,
-            "lambda" => Token::Lambda,
-            "match" => Token::Match,
-            "case" => Token::Case,
-            "switch" => Token::Switch,
-            "until" => Token::Until,
-            "repeat" => Token::Repeat,
-            "unless" => Token::Unless,
-            "yes" => Token::Yes,
-            "no" => Token::No,
-            "on" => Token::On,
-            "off" => Token::Off,
-            "module" => Token::Module,
+            "func" => Token::Func,
+            "return" => Token::Return,
+            "for" => Token::For,
+            "while" => Token::While,
+            "print" => Token::Print,
+            "pub" => Token::Pub,
+            "sym" => Token::Sym,
             _ => Token::Identifier(text),
         };
 
         Some(token)
     }
 
-    // Function to check if a character is an alphabetic character or an underscore
     fn is_alpha(&self, c: char) -> bool {
         c.is_alphabetic() || c == '_'
     }
 
-    // Function to check if a character is an alphanumeric character or an underscore
     fn is_alphanumeric(&self, c: char) -> bool {
         c.is_alphanumeric() || c == '_'
     }
 
-    // Function to handle comments and documentation
-    fn line_comment(&mut self) {
-        while self.peek() != '\n' && !self.is_at_end() {
-            self.advance();
-        }
-    }
-
-    // Function to handle block comments
-    fn block_comment(&mut self) {
-        while !self.is_at_end() {
-            if self.peek() == '*' && self.peek_next() == '/' {
-                self.advance();
-                self.advance();
-                break;
-            } else {
-                if self.peek() == '\n' {
-                    self.line += 1;
-                }
-                self.advance();
-            }
-        }
-    }
-
-    // Function to handle comments and documentation
-    fn handle_comment_or_doc(&mut self) -> Option<Token> {
-        // We have matched one '#' character so far
-        let mut count = 1;
-    
-        // Count additional consecutive '#' characters
-        while self.match_char('#') {
-            count += 1;
-        }
-    
-        // Check for an exclamation mark after the '#' characters
-        let has_exclamation = self.match_char('!');
-    
-        match (count, has_exclamation) {
-            (1, _) => {
-                // Single '#' - Line comment
-                self.line_comment();
-                None
-            }
-            (2, true) => {
-                // '##!' - Module-level documentation comment
-                self.doc_comment("module")
-            }
-            (2, false) => {
-                // '##' - Block comment
-                self.block_comment();
-                None
-            }
-            (3, _) => {
-                // '###' - Item-level documentation comment
-                self.doc_comment("item")
-            }
-            (n, _) if n >= 4 => {
-                // '####' or more - Block comment
-                self.block_comment();
-                None
-            }
-            _ => {
-                // Fallback to line comment
-                self.line_comment();
-                None
-            }
-        }
-    }
-                     
-    // Function to handle documentation comments
-    fn doc_comment(&mut self, _kind: &str) -> Option<Token> {
+    // Function to handle line comments
+    fn line_comment(&mut self) -> Option<Token>{
         let mut comment = String::new();
+
         while self.peek() != '\n' && !self.is_at_end() {
             comment.push(self.advance());
         }
-    
-        // Consume the newline character
-        if self.peek() == '\n' {
-            self.advance();
-        }
-    
-        Some(Token::DocComment(comment.trim().to_string()))
+
+        Some(Token::Comment(comment))
     }
-    
 }
+

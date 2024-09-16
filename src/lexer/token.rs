@@ -1,43 +1,26 @@
 #[derive(Debug, PartialEq, Clone)]
 pub enum Token {
     // Single-character tokens
-    LeftParen, // (
-    RightParen, // )
-    LeftBrace, // {
-    RightBrace, // }
-    Comma, // ,
-    Dot, // .
-    Minus, // -
-    Plus, // +
-    Semicolon, // ;
-    Colon, // :
-    Slash, // /
-    Star, // *
-    Percent, // %
-    Caret, // ^
-    Tilde, // ~
-    Backtick, // `
-    Dollar, // $
-    At, // @
-    //                      Hash, // #
-    Question, // ?
-    Exclamation, // !
-    Pipe, // |
-    Ampersand, // &
-
-    // one or two character tokens
-    BangEqual, // !=
-    Equal, // =
-    EqualEqual, // ==
-    Greater, // >
+    LeftParen,    // (
+    RightParen,   // )
+    LeftBrace,    // {
+    RightBrace,   // }
+    Comma,        // ,
+    Dot,          // .
+    Minus,        // -
+    Plus,         // +
+    Semicolon,    // ;
+    Slash,        // /
+    Star,         // *
+    Equal,        // =
+    BangEqual,    // !=
+    EqualEqual,   // ==
+    Greater,      // >
     GreaterEqual, // >=
-    Less, // <
-    LessEqual, // <=
-    FatArrow, // =>
-    ColonEqual, // :=
-    TildeEqual, // ~=
-    DoublePipe, // ||
-    DoubleAmpersand, // &&
+    Less,         // <
+    LessEqual,    // <=
+    Tilde,        // ~
+    TildeEqual,   // ~=
 
     // Literals
     Identifier(String),
@@ -46,39 +29,23 @@ pub enum Token {
 
     // Keywords
     And,
-    Class,
-    Else,
-    False,
-    Func,
-    For,
-    If,
-    Nil,
     Or,
-    Print,
-    Return,
-    Super,
-    This,
+    If,
+    Else,
     True,
+    False,
     Let,
-    While,
     Const,
-    Define,
-    Lambda,
-    Match,
-    Case,
-    Switch,
-    Until,
-    Repeat,
-    Unless,
-    Yes,
-    No,
-    On,
-    Off,
-    Module,
+    Func,
+    Return,
+    For,
+    While,
+    Print,
+    Pub,
+    Sym,
 
-    // Documentation and comments
-    DocComment(String), // ##!, ###
-    Comment(String), // #
+    // Comments
+    Comment(String),
 
     EOF,
 }

@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "fiddle"
-version = "0.1.0"
+name = "fddl"
+version = "0.0.2"

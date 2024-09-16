@@ -1,5 +1,5 @@
-use fiddle::lexer::Lexer;
-use fiddle::lexer::token::Token;
+use fddl::lexer::Lexer;
+use fddl::lexer::token::Token;
 
 #[test]
 fn test_single_tokens() {
@@ -23,19 +23,63 @@ fn test_single_tokens() {
 }
 
 #[test]
-fn test_identifier_and_keywords() {
-    let source = String::from("let $varName := 123; ");
+fn test_keywords_and_identifiers() {
+    let source = String::from("sym myVar = 123;");
     let mut lexer = Lexer::new(source);
     let tokens = lexer.scan_tokens();
 
     assert_eq!(
         tokens,
         vec![
-            Token::Let,
-            Token::Dollar,
-            Token::Identifier("varName".to_string()),
-            Token::ColonEqual,
+            Token::Sym,
+            Token::Identifier("myVar".to_string()),
+            Token::Equal,
             Token::Number(123.0),
+            Token::Semicolon,
+            Token::EOF
+        ]
+    );
+    println!("{:?}", tokens);
+}
+
+#[test]
+fn test_pub_keyword() {
+    let source = String::from("pub func example() { return 42; }");
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.scan_tokens();
+
+    assert_eq!(
+        tokens,
+        vec![
+            Token::Pub,
+            Token::Func,
+            Token::Identifier("example".to_string()),
+            Token::LeftParen,
+            Token::RightParen,
+            Token::LeftBrace,
+            Token::Return,
+            Token::Number(42.0),
+            Token::Semicolon,
+            Token::RightBrace,
+            Token::EOF
+        ]
+    );
+}
+
+#[test]
+fn test_comments() {
+    let source = String::from("# This is a comment\nlet a = 5;");
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.scan_tokens();
+
+    assert_eq!(
+        tokens,
+        vec![
+            Token::Comment(" This is a comment".to_string()),
+            Token::Let,
+            Token::Identifier("a".to_string()),
+            Token::Equal,
+            Token::Number(5.0),
             Token::Semicolon,
             Token::EOF
         ]
@@ -43,42 +87,30 @@ fn test_identifier_and_keywords() {
 }
 
 #[test]
-fn test_doc_comments() {
-    let source = String::from("##! Module documentation
-module test {
-    ### Function documentation
-    func example() {
-        # Regular comment
-        return 42;
-    }
-}      
-");
+fn test_operators_and_comparison() {
+    let source = String::from("a >= 10 != b == 5;");
     let mut lexer = Lexer::new(source);
     let tokens = lexer.scan_tokens();
 
-    println!("Tokens: {:?}", tokens);
-
-    assert_eq!(tokens[0], Token::DocComment("Module documentation".to_string()));
-    assert_eq!(tokens[1], Token::Module);
-    assert_eq!(tokens[2], Token::Identifier("test".to_string()));
-    assert_eq!(tokens[3], Token::LeftBrace);
-    assert_eq!(tokens[4], Token::DocComment("Function documentation".to_string()));
-    assert_eq!(tokens[5], Token::Func);
-    assert_eq!(tokens[6], Token::Identifier("example".to_string()));
-    assert_eq!(tokens[7], Token::LeftParen);
-    assert_eq!(tokens[8], Token::RightParen);
-    assert_eq!(tokens[9], Token::LeftBrace);
-    assert_eq!(tokens[10], Token::Return);
-    assert_eq!(tokens[11], Token::Number(42.0));
-    assert_eq!(tokens[12], Token::Semicolon);
-    assert_eq!(tokens[13], Token::RightBrace); // Closes function body
-    assert_eq!(tokens[14], Token::RightBrace); // Closes module
-    assert_eq!(tokens[15], Token::EOF);
+    assert_eq!(
+        tokens,
+        vec![
+            Token::Identifier("a".to_string()),
+            Token::GreaterEqual,
+            Token::Number(10.0),
+            Token::BangEqual,
+            Token::Identifier("b".to_string()),
+            Token::EqualEqual,
+            Token::Number(5.0),
+            Token::Semicolon,
+            Token::EOF
+        ]
+    );
 }
 
 #[test]
 fn test_tilde_operator() {
-    let source = String::from("if (a ~= b) { ~c }");
+    let source = String::from("if (a != b) { let c = ~5; }");
     let mut lexer = Lexer::new(source);
     let tokens = lexer.scan_tokens();
 
@@ -88,12 +120,16 @@ fn test_tilde_operator() {
             Token::If,
             Token::LeftParen,
             Token::Identifier("a".to_string()),
-            Token::TildeEqual,
+            Token::BangEqual,
             Token::Identifier("b".to_string()),
             Token::RightParen,
             Token::LeftBrace,
-            Token::Tilde,
+            Token::Let,
             Token::Identifier("c".to_string()),
+            Token::Equal,
+            Token::Tilde,
+            Token::Number(5.0),
+            Token::Semicolon,
             Token::RightBrace,
             Token::EOF
         ]
