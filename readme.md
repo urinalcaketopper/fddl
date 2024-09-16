@@ -1,49 +1,58 @@
 # fddl Programming Language
 
-fddl is a small programming language inspired by various languages, designed to help learn language implementation concepts in Rust.
+**fddl** is a small, experimental programming language, built in Rust, designed to explore language implementation concepts. It's a blend of ideas from various languages but remains unique, with its own syntax and quirks.
 
-I have, off and on throughout the last 15 or so years attempted to learn a programming language of some sort. I could always get through the basics, but would get stuck with any real world projects. And I wouldn't know who to turn to even if I knew where to start.
+This project is both a learning experience and a passion project, where the goal is to build a working language from scratch, while embracing some of the core features I enjoy from other languages.
 
-So I started learning Rust and really like it. So I've been following some tutorials and the Crafting Interpretors site as guides for this very problematic programming language. 
+## Why fddl?
 
-I like aspects of so many programming languages, but I don't really like any of them, so I always found it hard to pick one and stick with it. But I had the same problem playing World of Warcraft, too. 
+For years, I’ve tried to learn various programming languages, and while I could master the basics, the real-world projects often eluded me. Rust, however, clicked for me, and fddl was born out of this journey. fddl is my attempt to combine the aspects I appreciate from many languages into something uniquely my own.
 
-So I, like many of you, decided to make a hobby programming language to see what may be able to be done with it. 
+---
 
-## Features
+## Current Features
 
-- Custom syntax with unique operators and keywords
-- Documentation comments using `#`, similar to Rust's style
-- Lexer and parser built from scratch in Rust
+- **Custom Syntax**: fddl introduces unique operators and keywords to make programming more intuitive and fun.
+- **Lexer**: A working lexer that tokenizes fddl scripts into understandable pieces of the language.
+- **Tilde Operator**: Includes a custom `~` and `~=` operator for creative syntax possibilities.
+  
+---
 
 ## Getting Started
 
-To run the REPL:
+To start experimenting with fddl, you can run it in two ways:
 
+### Run the REPL (Interactive Mode)
 ```sh
 cargo run
 ```
 
-To run a fddl script:
-
+### Run a fddl Script
 ```sh
 cargo run path/to/script.fddl
 ```
 
+---
+
 ## Examples
 
-```sh
+Here are a couple of examples showcasing the current capabilities of fddl:
+
+### Hello World
+
+```fddl
 func main() {
-    print(`hello, world in fddl`);
-}     
+    print("hello, world in fddl");
+}
 ```
 
-```sh
-##! This is a sample module
+### Simple Math Module and Variable Declaration
+
+```fddl
+# This is a sample module
 
 module math {
-
-    ### Computes the square of a number
+    # Computes the square of a number
     func square(x) => x ^ 2;
 }
 
@@ -51,28 +60,43 @@ define $number := 5;
 print(`The square of $number is ${math.square($number)}`);
 ```
 
-(At least for right now.)
-
-## License
-
-This project is licensed under the MIT License.
-
+(Note: This feature is under development, and string interpolation is planned for a future update.)
 
 ---
 
-## **Notes and Next Steps**
+## Roadmap and Next Steps
 
-- [x] Added first new set of tokens and features, added the first `lexer` tests.
-- [ ] `parser` module is a placeholder.
-- [ ] `interpreter` module is a placeholder.
-- [ ] Implement a more robust error handling mechanism instead of using `stderr`.
-- [ ] Imlement string interpolation (backticks with `$variable`) 
-- [ ] Continue to expand tests to cover all new syntax and features.
-- [x] Made a crappy website.    
+fddl is very much a work in progress, with lots of planned improvements and additions. Here's a breakdown of what’s done and what’s coming up:
+
+- **Lexer**: 
+  - [x] Built and tested for basic syntax and operators.
+  - [x] Supports single-line and documentation comments.
+  - [ ] Add support for more complex syntax and features.
+
+- **Parser**: 
+  - [ ] Currently a placeholder. Implement parsing for function calls, expressions, etc.
+
+- **Compiler**: 
+  - [ ] Currently a placeholder. Implement the compiler to execute parsed code.
+
+- **Comments**:
+  - [x] Added support for single-line and documentation comments.
+  - [ ] Implement multi-line comments.
+  - [ ] Implement document building comments.
+
+- **Error Handling**: 
+  - [ ] Replace basic error reporting with a more robust error handling mechanism.
+
+- **String Interpolation**: 
+  - [ ] Implement string interpolation using backticks with `$variable` syntax.
+
+- **Testing**: 
+  - [x] Added initial lexer tests. 
+  - [ ] Expand tests to cover more syntax and edge cases.
 
 ---
 
-## **Running the Project**
+## Running the Project
 
 Make sure your project compiles and the tests pass:
 
@@ -80,3 +104,7 @@ Make sure your project compiles and the tests pass:
 cargo build
 cargo test
 ```
+
+## License
+
+This project is licensed under the MIT License.
