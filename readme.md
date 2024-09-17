@@ -27,9 +27,18 @@ To start experimenting with fddl, you can run it in two ways:
 cargo run
 ```
 
-### Run a fddl Script
+### Parse a fddl Script
 ```sh
 cargo run path/to/script.fddl
+```
+
+## Running the Project
+
+Make sure your project compiles and the tests pass:
+
+```bash
+cargo build
+cargo test
 ```
 
 ---
@@ -77,7 +86,7 @@ fddl is very much a work in progress, with lots of planned improvements and addi
   - [ ] Currently a placeholder. Implement parsing for function calls, expressions, etc.
 
 - **Compiler**: 
-  - [ ] Currently a placeholder. Implement the compiler to execute parsed code.
+  - [ ] Currently a placeholder. Implement the compiler to compile parsed code.
 
 - **Comments**:
   - [x] Added support for single-line and documentation comments.
@@ -85,25 +94,13 @@ fddl is very much a work in progress, with lots of planned improvements and addi
   - [ ] Implement document building comments.
 
 - **Error Handling**: 
-  - [ ] Replace basic error reporting with a more robust error handling mechanism.
-
-- **String Interpolation**: 
-  - [ ] Implement string interpolation using backticks with `$variable` syntax.
+  - [ ] Replace `stderr` with a more robust error handling mechanism.
 
 - **Testing**: 
-  - [x] Added initial lexer tests. 
+  - [x] Added initial `lexer` tests. 
   - [ ] Expand tests to cover more syntax and edge cases.
 
 ---
-
-## Running the Project
-
-Make sure your project compiles and the tests pass:
-
-```bash
-cargo build
-cargo test
-```
 
 ## License
 

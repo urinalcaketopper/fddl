@@ -23,7 +23,12 @@ impl Lexer {
         while !self.is_at_end() {
             self.start = self.current;
             if let Some(token) = self.scan_token() {
-                tokens.push(token);
+                if matches!(token, Token::Error(_)) {
+                    tokens.push(token);
+                    break;
+                } else {
+                    tokens.push(token);
+                }
             }
         }
 
@@ -71,7 +76,7 @@ impl Lexer {
                 if self.match_char('=') {
                     Some(Token::BangEqual)
                 } else {
-                    None // Or handle as an error or another token if needed
+                    Some(Token::Error(format!("Unexpected character '{}'", c)))
                 }
             },
             '=' => {
@@ -111,7 +116,7 @@ impl Lexer {
             // Any other character
             _ => {
                 eprintln!("Unexpected character '{}' on line {}", c, self.line);
-                None
+                Some(Token::Error(format!("Unexpected character '{}'", c)))
             }
         }
     }
@@ -238,6 +243,8 @@ impl Lexer {
             "print" => Token::Print,
             "pub" => Token::Pub,
             "sym" => Token::Sym,
+            "module" => Token::Module,
+            "import" => Token::Import,
             _ => Token::Identifier(text),
         };
 

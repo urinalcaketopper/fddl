@@ -43,9 +43,14 @@ pub enum Token {
     Print,
     Pub,
     Sym,
+    Module,
+    Import,
 
     // Comments
     Comment(String),
+
+    // Errors
+    Error(String),
 
     EOF,
 }
