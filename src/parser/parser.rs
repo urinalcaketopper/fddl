@@ -8,10 +8,28 @@ pub struct Parser {
 impl Parser {
     fn parse_statement(&mut self) -> Option<Statement> {
         if self.match_token(Token::Print) {
-            self.parse_print_statement()
+            self.parse_print_statement()    
+        } else if self.match_token(Token::Let) {
+            self.parse_variable_declaration()
+        } else if self.match_token(Token::If) {
+            self.parse_if_statement()
+        } else if self.match_token(Token::While) {
+            self.parse_while_statement()
+        } else if self.match_token(Token::For) {
+            self.parse_for_statement()
+        } else {
+            self.parse_expression_statement()
         }
     }
 
+    fn parse_print_statement(&mut self) -> Option<Statement> {
+        let value = self.parse.expression();
+        if self.match_token(Token::Semicolon) {
+            Some(Statement::PrintStatement(value?))
+        } else {
+            None
+        }
+    }
 
     pub fn new(tokens: Vec<Token>) -> Self {
         Parser {

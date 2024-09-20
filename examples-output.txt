@@ -1,0 +1,55 @@
+fddl examples.fddl 
+Func
+Identifier("main")
+LeftParen
+RightParen
+LeftBrace
+Comment(" print statement")
+Print
+LeftParen
+StringLiteral("hello, world in fddl")
+RightParen
+Semicolon
+Comment(" variable declaration")
+Let
+Identifier("y")
+Equal
+Number(5.0)
+Semicolon
+Comment(" if statement")
+If
+LeftParen
+Identifier("x")
+Greater
+Number(10.0)
+RightParen
+LeftBrace
+Print
+LeftParen
+StringLiteral("x is greater than 10")
+RightParen
+Semicolon
+RightBrace
+Comment(" while loop")
+While
+LeftParen
+Identifier("x")
+Less
+Number(100.0)
+RightParen
+LeftBrace
+Print
+LeftParen
+Identifier("x")
+RightParen
+Semicolon
+Let
+Identifier("x")
+Equal
+Identifier("x")
+Plus
+Number(1.0)
+Semicolon
+RightBrace
+RightBrace
+EOF

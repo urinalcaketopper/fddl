@@ -1,0 +1,18 @@
+func main() {
+    // print statement
+    print("hello, world in fddl");
+
+    // variable declaration
+    let y = 5;
+
+    // if statement
+    if (x > 10) {
+    print("x is greater than 10");
+    }
+
+    // while loop
+    while (x < 100) {
+    print(x);
+    let x = x + 1;
+    }
+}
