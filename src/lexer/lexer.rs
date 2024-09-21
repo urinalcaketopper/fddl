@@ -1,5 +1,7 @@
 use crate::lexer::token::Token;
 
+#[allow(dead_code)]
+
 pub struct Lexer {
     source: Vec<char>,
     start: usize,

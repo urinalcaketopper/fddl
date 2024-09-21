@@ -83,7 +83,8 @@ fddl is very much a work in progress, with lots of planned improvements and addi
   - [ ] Add support for more complex syntax and features.
 
 - **Parser**: 
-  - [ ] Currently a placeholder. Implement parsing for function calls, expressions, etc.
+  - [ ] Working on building out functions to parse simple functionality in the language (if, while, for), and to read their expressions and values
+  - [ ] Implement parsing for function calls, expressions, checks, literally everything.
 
 - **Compiler**: 
   - [ ] Currently a placeholder. Implement the compiler to compile parsed code.

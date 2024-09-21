@@ -6,20 +6,22 @@ use std::env;
 use std::fs;
 use std::io::{self, Write};
 
-use lexer::Lexer;
+// use lexer::Lexer;
+use fddl::lexer::Lexer;
+use fddl::parser::Parser;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
+    // runs file or REPL
     if args.len() > 1 {
-        // If a file is provided, run it
         run_file(&args[1]);
     } else {
-        // Otherwise start the REPL
         run_repl();
     }
 }
 
+// basic REPL
 fn run_repl() {
     println!("fddl REPL");
     loop {
@@ -36,11 +38,14 @@ fn run_repl() {
         run(buffer.clone());
     }
 }
+
+// runs file
 fn run_file(path: &str) {
     let source = fs::read_to_string(path).expect("Failed to read source file");
     run(source);
 }
 
+// runs source code
 fn run(source: String) {
     let mut lexer = Lexer::new(source);
     let tokens = lexer.scan_tokens();
