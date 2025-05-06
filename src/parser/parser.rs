@@ -51,11 +51,12 @@ impl Parser {
 
     fn parse_variable_declaration(&mut self) -> Option<Statement> {
         // Assuming 'let' token is already consumed by match_token
-        let token = self.peek_and_advance().cloned(); // Need a way to get the identifier token
+        // peek_and_advance() returns Option<Token>, which is what we want.
+        let token_option = self.peek_and_advance();
 
-        if let Some(Token::Identifier(name)) = token {
+        if let Some(Token::Identifier(name)) = token_option {
             let initializer = if self.match_token(Token::Equal) {
-                self.parse_expression() // Needs implemented parse_expression
+                self.parse_expression()
             } else {
                 None
             };
@@ -63,13 +64,12 @@ impl Parser {
             if self.match_token(Token::Semicolon) {
                 Some(Statement::VariableDeclaration(name, initializer))
             } else {
-                // Error: Missing semicolon
                 eprintln!("Error: Expected ';' after variable declaration.");
                 None
             }
         } else {
              eprintln!("Error: Expected variable name after 'let'.");
-            // Potentially consume tokens until next semicolon or brace to recover?
+            // If token_option was None or not an Identifier, this branch is taken.
             None
         }
     }
