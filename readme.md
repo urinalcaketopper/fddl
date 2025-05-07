@@ -83,6 +83,8 @@ fddl is very much a work in progress, with lots of planned improvements and addi
   - [ ] Add support for more complex syntax and features.
 
 - **Parser**: 
+  - [x] Parser parsing tilde and minus successfully
+  - [ ] Parser parsing the rest of the operators
   - [ ] Working on building out functions to parse simple functionality in the language (if, while, for), and to read their expressions and values
   - [ ] Implement parsing for function calls, expressions, checks, literally everything.
 
@@ -105,4 +107,4 @@ fddl is very much a work in progress, with lots of planned improvements and addi
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the GPL License.

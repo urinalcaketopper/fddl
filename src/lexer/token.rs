@@ -12,6 +12,7 @@ pub enum Token {
     Semicolon,    // ;
     Slash,        // /
     Star,         // *
+    Percent,      // %
     Equal,        // =
     BangEqual,    // !=
     EqualEqual,   // ==

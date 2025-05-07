@@ -53,6 +53,7 @@ impl Lexer {
             '+' => Some(Token::Plus),
             ';' => Some(Token::Semicolon),
             '*' => Some(Token::Star),
+            '%' => Some(Token::Percent),
             '~' => {
                 if self.match_char('=') {
                     Some(Token::TildeEqual)

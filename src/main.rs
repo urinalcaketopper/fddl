@@ -23,7 +23,7 @@ fn main() {
 
 // basic REPL
 fn run_repl() {
-    println!("fddl REPL");
+    println!("fddl repl");
     loop {
         print!("> ");
         io::stdout().flush().unwrap();
@@ -47,7 +47,7 @@ fn run_file(path: &str) {
 
 // runs source code
 fn run(source: String) {
-    println!("Source: {}", source.trim()); // Optional: print the source
+    println!("Source: {}", source.trim()); // prints source for debugging
 
     let mut lexer = Lexer::new(source);
     let tokens = lexer.scan_tokens();
@@ -61,8 +61,14 @@ fn run(source: String) {
     // old code ends - delete if not needed
 
     let mut parser = Parser::new(tokens); // Create a new parser instance
+    let ast_statements = parser.parse_program(); // NEW!
 
     println!("Parsed Statements (AST):");
+
+    for stmt in ast_statements {
+        println!("{:?}", stmt);
+    }
+    
     loop {
 
         if parser.is_at_end() { // Add is_at_end to Parser if not already public

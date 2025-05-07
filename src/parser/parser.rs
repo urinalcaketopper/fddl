@@ -1,6 +1,6 @@
 // Add Literal to the use statement if it's not already implicitly included
 use crate::lexer::token::Token;
-use crate::parser::ast::{Expression, Statement, Literal}; // Added Literal here
+use crate::parser::ast::{Expression, Statement, Literal, Operator}; // Added Literal here
 use crate::lexer::Lexer;
 
 pub struct Parser {
@@ -8,6 +8,7 @@ pub struct Parser {
     current: usize,
 }
 
+// mostly all written months ago
 #[allow(dead_code)]
 impl Parser {
 
@@ -18,9 +19,7 @@ impl Parser {
         }
     }
 
-    // --- Main Parsing Logic (Statements) ---
-
-    fn parse_statement(&mut self) -> Option<Statement> {
+    pub fn parse_statement(&mut self) -> Option<Statement> {
         // ... (existing statement parsing code) ...
         // Make sure these call the updated parse_expression eventually
         if self.match_token(Token::Print) {
@@ -39,7 +38,7 @@ impl Parser {
     }
 
     fn parse_print_statement(&mut self) -> Option<Statement> {
-        let value = self.parse_expression()?; // Needs implemented parse_expression
+        let value = self.parse_expression()?;  
         if self.match_token(Token::Semicolon) {
             Some(Statement::PrintStatement(value))
         } else {
@@ -79,7 +78,7 @@ impl Parser {
              eprintln!("Error: Expected '(' after 'if'.");
              return None;
         }
-        let condition = self.parse_expression()?; // Needs implemented parse_expression
+        let condition = self.parse_expression()?;  
         if !self.match_token(Token::RightParen) {
              eprintln!("Error: Expected ')' after if condition.");
              return None;
@@ -101,7 +100,7 @@ impl Parser {
               eprintln!("Error: Expected '(' after 'while'.");
               return None;
          }
-         let condition = self.parse_expression()?; // Needs implemented parse_expression
+         let condition = self.parse_expression()?;  
          if !self.match_token(Token::RightParen) {
               eprintln!("Error: Expected ')' after while condition.");
               return None;
@@ -112,9 +111,6 @@ impl Parser {
          Some(Statement::WhileStatement(condition, body))
      }
 
-     // Note: For statement parsing is often complex. Let's simplify for now.
-     // This implementation assumes a simple structure like `for (init; cond; incr) body`
-     // It currently expects statements for init/incr which might not be ideal.
      fn parse_for_statement(&mut self) -> Option<Statement> {
          if !self.match_token(Token::LeftParen) {
               eprintln!("Error: Expected '(' after 'for'.");
@@ -123,7 +119,7 @@ impl Parser {
 
          // Initializer: Could be variable declaration or expression statement
          let initializer = if self.match_token(Token::Semicolon) {
-            None // No initializer
+            None 
          } else if self.match_token(Token::Let) {
              // Need to handle declaration specifically if wanted, or parse as statement
              Some(Box::new(self.parse_variable_declaration()?)) // Assuming Let was consumed
@@ -143,7 +139,7 @@ impl Parser {
              // TODO: Handle absent condition -> treat as true
              // Some(Expression::Literal(Literal::Boolean(true)))
          } else {
-             self.parse_expression()? // Needs implemented parse_expression
+             self.parse_expression()?  
          };
 
          if !self.match_token(Token::Semicolon) {
@@ -155,7 +151,7 @@ impl Parser {
          let increment = if self.check(&Token::RightParen) {
              None // No increment expression
          } else {
-             Some(self.parse_expression()?) // Needs implemented parse_expression
+             Some(self.parse_expression()?)  
          };
 
          if !self.match_token(Token::RightParen) {
@@ -166,15 +162,6 @@ impl Parser {
          // Body
          let body = Box::new(self.parse_statement()?);
 
-        // Need to adjust AST for optional initializer/increment if using expressions directly
-        // The current AST ForStatement expects Statements for init/incr
-        // For simplicity now, let's assume the AST might need adjustment later
-        // Or we wrap the initializer/increment expressions in ExpressionStatement
-        // Let's stick to the original AST requiring Statements for now, meaning
-        // parse_for_statement needs modification if increment isn't a full statement.
-        // This is getting complicated - maybe defer full for-loop implementation?
-        // Let's comment out the ForStatement return for now until AST/logic is clearer.
-
          eprintln!("Warning: For statement AST structure might need review.");
          // Some(Statement::ForStatement(initializer, condition, increment, body))
          None // Temporarily disable until AST/logic is solid for for-loops
@@ -182,50 +169,46 @@ impl Parser {
      }
 
     fn parse_expression_statement(&mut self) -> Option<Statement> {
-        let expr = self.parse_expression()?; // Needs implemented parse_expression
+        let expr = self.parse_expression()?;  
         if self.match_token(Token::Semicolon) {
             Some(Statement::ExpressionStatement(expr))
         } else {
-            // Error: Missing semicolon
             eprintln!("Error: Expected ';' after expression statement.");
             None
         }
     }
 
-    // --- Expression Parsing ---
-
-    // This is the main entry point for parsing any expression.
-    // For now, it just calls parse_primary, but later it will
-    // call the function for the lowest precedence level (e.g., assignment).
     fn parse_expression(&mut self) -> Option<Expression> {
-        self.parse_primary() // Start with the simplest elements
-        // Later: self.parse_assignment() or self.parse_equality() etc.
+        // self.parse_primary(); // Now redundant // Start with the simplest elements
+        // self.parse_unary() // handles unary operators ('-' and '~')
+        // self.parse_term() // handles binary operators ('+', '-', '*', '/')
+        // self.parse_comparison() // handles comparison operators ('<', '>', '<=', '>=')
+        self.parse_equality() // handles equality operators ('==', '!=')
     }
 
-    // parse_primary handles literals, identifiers, and grouping parentheses.
+    // Each function below is fed into the function below it
     fn parse_primary(&mut self) -> Option<Expression> {
-        // Clone the token to match against it without consuming it yet
         let current_token = self.current_token().clone();
 
         match current_token {
             Token::Number(value) => {
-                self.advance(); // Consume the token
+                self.advance();   
                 Some(Expression::Literal(Literal::Number(value)))
             }
             Token::StringLiteral(value) => {
-                self.advance(); // Consume the token
+                self.advance();   
                 Some(Expression::Literal(Literal::String(value)))
             }
             Token::True => {
-                self.advance(); // Consume the token
+                self.advance();   
                 Some(Expression::Literal(Literal::Boolean(true)))
             }
             Token::False => {
-                self.advance(); // Consume the token
+                self.advance();   
                 Some(Expression::Literal(Literal::Boolean(false)))
             }
             Token::Identifier(name) => {
-                self.advance(); // Consume the token
+                self.advance();   
                 Some(Expression::Variable(name))
             }
             Token::LeftParen => {
@@ -251,7 +234,111 @@ impl Parser {
         }
     }
 
-    // Checks the current token without consuming it
+    fn parse_unary(&mut self) -> Option<Expression> {
+        let current_tok = self.current_token().clone();
+
+        match current_tok {
+            Token::Minus | Token::Tilde => {
+                self.advance(); 
+
+                let operator = match current_tok {
+                    Token::Minus => Operator::Minus, 
+                    Token::Tilde => Operator::Almost,
+                    _ => unreachable!("Lexer should not produce other tokens here if first match is minus/tilde"),
+                };
+
+                let right_operand = self.parse_primary()?;
+                Some(Expression::Unary(operator, Box::new(right_operand)))
+            }
+            _ => {
+                // If not a unary operator, just return the primary expression
+                self.parse_primary()
+            }
+        }
+    }
+
+    fn parse_term(&mut self) -> Option<Expression> {
+        let mut expr = self.parse_factor()?;
+
+        while matches!(self.current_token(), Token::Plus | Token::Minus) {
+            let operator_token = self.current_token().clone();
+            self.advance();
+
+            let ast_operator = match operator_token {
+                Token::Plus => Operator::Plus,
+                Token::Minus => Operator::Minus,
+                _ => unreachable!("Lexer should not produce other tokens here if first match is plus/minus. Checked by matches! macro."),
+            };
+
+            let right_operand = self.parse_factor()?;
+            expr = Expression::Binary(Box::new(expr), ast_operator, Box::new(right_operand));
+        }
+        Some(expr)
+    }
+
+    fn parse_factor(&mut self) -> Option<Expression> {
+        let mut expr = self.parse_unary()?;
+
+        while matches!(self.current_token(), Token::Star | Token::Slash | Token::Percent) {
+            let operator_token = self.current_token().clone();
+            self.advance();
+
+            let ast_operator = match operator_token {
+                Token::Star => Operator::Multiply,
+                Token::Slash => Operator::Divide,
+                Token::Percent => Operator::Modulus,
+                _ => unreachable!("Lexer should not produce other tokens here if first match is star/slash. Checked by matches! macro."),
+            };
+
+            let right_operand = self.parse_unary()?;
+            expr = Expression::Binary(Box::new(expr), ast_operator, Box::new(right_operand));
+        }
+        Some(expr)
+    }
+
+    fn parse_comparison(&mut self) -> Option<Expression> {
+        let mut expr = self.parse_term()?;
+
+        while matches!(
+            self.current_token(),
+            Token::Greater | Token::GreaterEqual | Token::Less | Token::LessEqual
+        ) {
+            let operator_token = self.current_token().clone();
+            self.advance(); 
+
+            let ast_operator = match operator_token {
+                Token::Greater => Operator::Greater,
+                Token::GreaterEqual => Operator::GreaterEqual,
+                Token::Less => Operator::Less,
+                Token::LessEqual => Operator::LessEqual,
+                _ => unreachable!("Checked by matches! macro"),
+            };
+
+            let right_operand = self.parse_term()?; 
+            expr = Expression::Binary(Box::new(expr), ast_operator, Box::new(right_operand));
+        }
+        Some(expr)
+    }
+
+    fn parse_equality(&mut self) -> Option<Expression> {
+        let mut expr = self.parse_comparison()?;
+
+        while matches!(self.current_token(), Token::EqualEqual | Token::BangEqual) {
+            let operator_token = self.current_token().clone();
+            self.advance(); 
+
+            let ast_operator = match operator_token {
+                Token::EqualEqual => Operator::EqualEqual,
+                Token::BangEqual => Operator::NotEqual,
+                _ => unreachable!("Checked by matches! macro"),
+            };
+
+            let right_operand = self.parse_comparison()?; 
+            expr = Expression::Binary(Box::new(expr), ast_operator, Box::new(right_operand));
+        }
+        Some(expr)
+    }
+
     fn check(&self, expected: &Token) -> bool {
          if self.is_at_end() {
              return false;
@@ -259,23 +346,15 @@ impl Parser {
          self.current_token() == expected
     }
 
-    // Returns the current token without consuming
     fn current_token(&self) -> &Token {
         // Handle potential index out of bounds if current somehow exceeds length
         self.tokens.get(self.current).unwrap_or(&Token::EOF) // Return EOF if out of bounds
     }
 
-    // Returns the next token without consuming
     fn peek(&self) -> &Token {
          self.tokens.get(self.current + 1).unwrap_or(&Token::EOF)
     }
 
-    fn is_at_end(&self) -> bool {
-        // Check if current token is EOF
-        matches!(self.current_token(), Token::EOF)
-    }
-
-    // Consumes the current token and returns it
     fn advance(&mut self) -> &Token {
         if !self.is_at_end() {
             self.current += 1;
@@ -284,7 +363,6 @@ impl Parser {
         self.previous_token()
     }
 
-    // Like advance, but clones the token for ownership if needed
     fn peek_and_advance(&mut self) -> Option<Token> {
         if self.is_at_end() {
             None
@@ -295,8 +373,6 @@ impl Parser {
         }
     }
 
-
-    // Consumes the current token *if* it matches the expected type
     fn match_token(&mut self, expected: Token) -> bool {
         let current_matches = match (self.current_token(), &expected) {
             (Token::LeftParen, Token::LeftParen) => true,
@@ -342,15 +418,13 @@ impl Parser {
             };
 
         if current_matches {
-            self.advance(); // Consume the token if it matches
+            self.advance(); 
             true
         } else {
             false
         }
     }
 
-
-    // Returns the token *before* the current one
     fn previous_token(&self) -> &Token {
         // Handle edge case where current is 0
         if self.current == 0 {
@@ -359,4 +433,33 @@ impl Parser {
             &self.tokens[self.current - 1]
         }
     }
+
+    // 5-7-25
+    // parse_program in Parser: a cleaner way to handle parsing multiple statements
+    pub fn parse_program(&mut self) -> Vec<Statement> {
+        let mut statements = Vec::new();
+        while !self.is_at_end_of_significant_tokens() {
+            match self.parse_statement() {
+                Some(stmt) => statements.push(stmt),
+                None => {
+                    // Handle error: could not parse statement
+                    eprintln!("Error: Could not parse statement.");
+                    break;
+                }
+            }
+        }
+        statements
+    }
+
+    fn is_at_end_of_significant_tokens(&self) -> bool {
+        if self.current >= self.tokens.len() { return true; }
+        matches!(self.tokens[self.current], Token::EOF)
+    }
+
+    pub fn is_at_end(&self) -> bool {
+        if self.current >= self.tokens.len() { return true; }
+        matches!(self.tokens[self.current], Token::EOF)
+    }
+    
 }
+

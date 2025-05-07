@@ -1,9 +1,9 @@
 [package]
 name = "fddl"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 authors = ["Tristan Smith <tristan@fddl.dev>"]
 description = "A small programming language written in Rust."
-license = "MIT"
+license = "GPL"
 
 [dependencies]
