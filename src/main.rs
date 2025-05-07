@@ -47,12 +47,37 @@ fn run_file(path: &str) {
 
 // runs source code
 fn run(source: String) {
+    println!("Source: {}", source.trim()); // Optional: print the source
+
     let mut lexer = Lexer::new(source);
     let tokens = lexer.scan_tokens();
 
-    for token in tokens {
-        println!("{:?}", token);
-    }
+    // old code begins
+    // println!("Tokens:");
+    // for token in &tokens { // Iterate by reference if you use tokens later
+    //     println!("{:?}", token);
+    // }
+    // println!("---");
+    // old code ends - delete if not needed
 
-    // pass tokens to parser and interpreter
+    let mut parser = Parser::new(tokens); // Create a new parser instance
+
+    println!("Parsed Statements (AST):");
+    loop {
+
+        if parser.is_at_end() { // Add is_at_end to Parser if not already public
+            break;
+        }
+
+        match parser.parse_statement() { 
+            Some(statement) => {
+                println!("{:?}", statement); 
+            }
+            None => {
+                println!("Parser returned None, might be an error or unhandled EOF by parse_statement.");
+                break;
+            }
+        }
+
+    }
 }
