@@ -69,7 +69,7 @@ define $number := 5;
 print(`The square of $number is ${math.square($number)}`);
 ```
 
-(Note: This feature is under development, and string interpolation is planned for a future update.)
+(Note: This feature is under development, and string interpolation is planned for the future.)
 
 ---
 
@@ -84,9 +84,10 @@ fddl is very much a work in progress, with lots of planned improvements and addi
 
 - **Parser**: 
   - [x] Parser parsing tilde and minus successfully
-  - [ ] Parser parsing the rest of the operators
+  - [x] Parser parsing function calls
+  - [x] Parser parsing the rest of the operators (mostly complete)
   - [ ] Working on building out functions to parse simple functionality in the language (if, while, for), and to read their expressions and values
-  - [ ] Implement parsing for function calls, expressions, checks, literally everything.
+  - [ ] Implement parsing for ~~~function calls,~~~ expressions, checks, literally everything.
 
 - **Compiler**: 
   - [ ] Currently a placeholder. Implement the compiler to compile parsed code.

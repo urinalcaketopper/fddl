@@ -179,11 +179,13 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Option<Expression> {
-        // self.parse_primary(); // Now redundant // Start with the simplest elements
+        // Keeping old tests here for reference until release.
+        // self.parse_primary(); // Start with the simplest elements
         // self.parse_unary() // handles unary operators ('-' and '~')
         // self.parse_term() // handles binary operators ('+', '-', '*', '/')
         // self.parse_comparison() // handles comparison operators ('<', '>', '<=', '>=')
-        self.parse_equality() // handles equality operators ('==', '!=')
+        // self.parse_equality() // handles equality operators ('==', '!=')
+        self.parse_logical_or() // handles logical operators ('&&', '||')
     }
 
     // Each function below is fed into the function below it
@@ -212,11 +214,9 @@ impl Parser {
                 Some(Expression::Variable(name))
             }
             Token::LeftParen => {
-                self.advance(); // Consume '('
-                // Recursively parse the expression inside the parentheses
-                let expr = self.parse_expression()?; // Call the main expression parser
+                self.advance(); 
+                let expr = self.parse_expression()?; 
 
-                // Expect and consume the closing parenthesis
                 if self.match_token(Token::RightParen) {
                      // Return the inner expression, wrapped in Grouping AST node
                     Some(Expression::Grouping(Box::new(expr)))
@@ -235,24 +235,22 @@ impl Parser {
     }
 
     fn parse_unary(&mut self) -> Option<Expression> {
-        let current_tok = self.current_token().clone();
+        let operator_token_snapshot = self.current_token().clone();
 
-        match current_tok {
+        match operator_token_snapshot {
             Token::Minus | Token::Tilde => {
-                self.advance(); 
-
-                let operator = match current_tok {
-                    Token::Minus => Operator::Minus, 
+                self.advance();
+                let ast_operator = match operator_token_snapshot {
+                    Token::Minus => Operator::Minus,
                     Token::Tilde => Operator::Almost,
-                    _ => unreachable!("Lexer should not produce other tokens here if first match is minus/tilde"),
+                    _ => unreachable!("Lexer should not produce other tokens here if first match is minus/tilde. Checked by matches! macro."),
                 };
-
-                let right_operand = self.parse_primary()?;
-                Some(Expression::Unary(operator, Box::new(right_operand)))
+                
+                let right_operand = self.parse_unary()?;
+                Some(Expression::Unary(ast_operator, Box::new(right_operand)))
             }
             _ => {
-                // If not a unary operator, just return the primary expression
-                self.parse_primary()
+                self.parse_call_expression()
             }
         }
     }
@@ -337,6 +335,82 @@ impl Parser {
             expr = Expression::Binary(Box::new(expr), ast_operator, Box::new(right_operand));
         }
         Some(expr)
+    }
+
+    fn parse_logical_or(&mut self) -> Option<Expression> {
+        let mut expr = self.parse_logical_and()?;
+
+        while matches!(self.current_token(), Token::Or) {
+            let operator_token = self.current_token().clone();
+            self.advance();
+
+            let ast_operator = Operator::Or;
+
+            let right_operand = self.parse_logical_and()?;
+            expr = Expression::Binary(Box::new(expr), ast_operator, Box::new(right_operand));
+        }
+        Some(expr)
+    }
+
+    fn parse_logical_and(&mut self) -> Option<Expression> {
+        let mut expr = self.parse_equality()?;
+
+        while matches!(self.current_token(), Token::And) {
+            let operator_token = self.current_token().clone();
+            self.advance();
+
+            let ast_operator = Operator::And;
+
+            let right_operand = self.parse_equality()?;
+            expr = Expression::Binary(Box::new(expr), ast_operator, Box::new(right_operand));
+        }
+        Some(expr)
+    }
+
+    fn parse_call_expression(&mut self) -> Option<Expression> {
+        let mut expr = self.parse_primary()?;
+
+        loop {
+            if self.check(&Token::LeftParen) {
+                expr = self.finish_call(expr)?;
+            } else {
+                break;
+            }
+        }
+        Some(expr)
+    }
+
+    fn finish_call(&mut self, callee: Expression) -> Option<Expression> {
+        self.advance();
+
+        let arguments = self.parse_arguments()?;
+
+        if !self.match_token(Token::RightParen) {
+            eprintln!("Error: Expected ')' after arguments in function call.");
+            return None;
+        }
+        Some(Expression::FunctionCall(Box::new(callee), arguments))
+    }
+
+    fn parse_arguments(&mut self) -> Option<Vec<Expression>> {
+        let mut arguments = Vec::new();
+
+        if self.check(&Token::RightParen) {
+            return Some(arguments);
+        }
+
+        match self.parse_expression() {
+            Some(arg) => arguments.push(arg),
+            None => return None,
+        }
+
+        while self.match_token(Token::Comma) {
+            match self.parse_expression() {
+                Some(arg) => arguments.push(arg),
+                None => return None,
+            }
+        }
+        Some(arguments)
     }
 
     fn check(&self, expected: &Token) -> bool {

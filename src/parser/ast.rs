@@ -40,6 +40,10 @@ pub enum Operator {
     GreaterEqual,
     LessEqual,
 
+    // Logical operators
+    And, // For logical AND e.g. true && false
+    Or,  // For logical OR e.g. true || false
+
     // Equality (we'll add these logic for these later)
     EqualEqual, // For equality e.g. 5 == 5
     NotEqual, // For inequality e.g. 5 != 5
