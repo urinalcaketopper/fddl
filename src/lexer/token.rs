@@ -46,6 +46,8 @@ pub enum Token {
     Sym,
     Module,
     Import,
+    Some,
+    Not,
 
     // Comments
     Comment(String),

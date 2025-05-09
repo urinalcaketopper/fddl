@@ -24,6 +24,8 @@ pub enum Operator {
     // Unary
     Minus,        // For unary negation e.g. -5
     Almost,       // For unary ~ e.g. ~5
+    Some,        // For unary ? e.g. ?5
+    Not,         // For unary ! e.g. !true
 
     // Binary
     Plus, // For addition e.g. 5 + 5

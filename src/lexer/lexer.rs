@@ -248,6 +248,8 @@ impl Lexer {
             "sym" => Token::Sym,
             "module" => Token::Module,
             "import" => Token::Import,
+            "some" => Token::Some,
+            "not" => Token::Not,
             _ => Token::Identifier(text),
         };
 

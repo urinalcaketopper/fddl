@@ -238,11 +238,13 @@ impl Parser {
         let operator_token_snapshot = self.current_token().clone();
 
         match operator_token_snapshot {
-            Token::Minus | Token::Tilde => {
+            Token::Minus | Token::Tilde | Token::Some | Token::Not => {
                 self.advance();
                 let ast_operator = match operator_token_snapshot {
                     Token::Minus => Operator::Minus,
                     Token::Tilde => Operator::Almost,
+                    Token::Some => Operator::Some,
+                    Token::Not => Operator::Not,
                     _ => unreachable!("Lexer should not produce other tokens here if first match is minus/tilde. Checked by matches! macro."),
                 };
                 
