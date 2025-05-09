@@ -8,6 +8,12 @@ This project is both a learning experience and a passion project, where the goal
 
 For years, I’ve tried to learn various programming languages, and while I could master the basics, the real-world projects often eluded me. Rust, however, clicked for me, and fddl was born out of this journey. fddl is my attempt to combine the aspects I appreciate from many languages into something uniquely my own.
 
+## No, but why "fddl", as in the name?
+
+Oh, I see...
+
+Well, Ferris, the mascot of Rust, is a crab. There's a type of crab that exists called a Fiddler Crab. So, yeah, that.
+
 ---
 
 ## Current Features
@@ -87,7 +93,7 @@ fddl is very much a work in progress, with lots of planned improvements and addi
   - [x] Parser parsing function calls
   - [x] Parser parsing the rest of the operators (mostly complete)
   - [ ] Working on building out functions to parse simple functionality in the language (if, while, for), and to read their expressions and values
-  - [ ] Implement parsing for ~~~function calls,~~~ expressions, checks, literally everything.
+  - [ ] Implement parsing for ~~~function calls~~~, expressions, checks, literally everything.
   - [ ] L & R Values
 
 - **Compiler**: 
