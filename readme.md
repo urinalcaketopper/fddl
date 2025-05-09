@@ -88,6 +88,7 @@ fddl is very much a work in progress, with lots of planned improvements and addi
   - [x] Parser parsing the rest of the operators (mostly complete)
   - [ ] Working on building out functions to parse simple functionality in the language (if, while, for), and to read their expressions and values
   - [ ] Implement parsing for ~~~function calls,~~~ expressions, checks, literally everything.
+  - [ ] L & R Values
 
 - **Compiler**: 
   - [ ] Currently a placeholder. Implement the compiler to compile parsed code.
@@ -99,6 +100,7 @@ fddl is very much a work in progress, with lots of planned improvements and addi
 
 - **Error Handling**: 
   - [ ] Replace `stderr` with a more robust error handling mechanism.
+  - [ ] Errors as values
 
 - **Testing**: 
   - [x] Added initial `lexer` tests. 
