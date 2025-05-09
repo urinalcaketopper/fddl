@@ -93,7 +93,7 @@ fddl is very much a work in progress, with lots of planned improvements and addi
   - [x] Parser parsing function calls
   - [x] Parser parsing the rest of the operators (mostly complete)
   - [ ] Working on building out functions to parse simple functionality in the language (if, while, for), and to read their expressions and values
-  - [ ] Implement parsing for ~~~function calls~~~, expressions, checks, literally everything.
+  - [ ] Implement parsing for ~~function calls,~~ expressions, checks, literally everything.
   - [ ] L & R Values
 
 - **Compiler**: 
