@@ -1,5 +1,5 @@
 use crate::lexer::token::Token;
-use crate::parser::ast::{Expression, Statement, Literal, Operator}; // Added Literal here
+use crate::parser::ast::{Expression, Statement, Literal, Operator}; 
 use crate::lexer::Lexer;
 
 pub struct Parser {
@@ -7,7 +7,6 @@ pub struct Parser {
     current: usize,
 }
 
-// mostly all written months ago
 #[allow(dead_code)]
 impl Parser {
 
@@ -24,27 +23,17 @@ impl Parser {
               return None;
          }
 
-         // Initializer: Could be variable declaration or expression statement
          let initializer = if self.match_token(Token::Semicolon) {
             None 
          } else if self.match_token(Token::Let) {
-             // Need to handle declaration specifically if wanted, or parse as statement
-             Some(Box::new(self.parse_variable_declaration()?)) // Assuming Let was consumed
+             Some(Box::new(self.parse_variable_declaration()?))
          } else {
-            // Parse as expression statement, then expect semicolon
             let expr_stmt = self.parse_expression_statement()?;
             Some(Box::new(expr_stmt))
          };
-         // Semicolon already consumed if initializer was None or handled by expr_stmt
-
-         // Condition: Must be an expression
          let condition = if self.check(&Token::Semicolon) {
-             // No condition (treat as true) - maybe represent with a literal true?
-             // For now, let's require a condition or handle absence later
              eprintln!("Error: For loop condition is required (for now).");
              return None;
-             // TODO: Handle absent condition -> treat as true
-             // Some(Expression::Literal(Literal::Boolean(true)))
          } else {
              self.parse_expression()?  
          };
@@ -54,9 +43,8 @@ impl Parser {
              return None;
          }
 
-         // Increment: Must be an expression (or None)
          let increment = if self.check(&Token::RightParen) {
-             None // No increment expression
+             None
          } else {
              Some(self.parse_expression()?)  
          };
@@ -66,12 +54,10 @@ impl Parser {
              return None;
          }
 
-         // Body
          let body = Box::new(self.parse_statement()?);
 
          eprintln!("Warning: For statement AST structure might need review.");
-         // Some(Statement::ForStatement(initializer, condition, increment, body))
-         None // Temporarily disable until AST/logic is solid for for-loops
+         None
 
     }
 
@@ -460,8 +446,7 @@ impl Parser {
     }
 
     fn current_token(&self) -> &Token {
-        // Handle potential index out of bounds if current somehow exceeds length
-        self.tokens.get(self.current).unwrap_or(&Token::EOF) // Return EOF if out of bounds
+        self.tokens.get(self.current).unwrap_or(&Token::EOF)
     }
 
     fn peek(&self) -> &Token {
@@ -472,7 +457,6 @@ impl Parser {
         if !self.is_at_end() {
             self.current += 1;
         }
-        // Return the token *before* the increment (the one just consumed)
         self.previous_token()
     }
 
@@ -526,7 +510,7 @@ impl Parser {
             (Token::Module, Token::Module) => true,
             (Token::Import, Token::Import) => true,
             (Token::EOF, Token::EOF) => true,
-            // Add other simple tokens here...
+            // Add others
              (t1, t2) => std::mem::discriminant(t1) == std::mem::discriminant(t2)
             };
 
@@ -539,7 +523,6 @@ impl Parser {
     }
 
     fn previous_token(&self) -> &Token {
-        // Handle edge case where current is 0
         if self.current == 0 {
              self.tokens.get(0).unwrap_or(&Token::EOF)
         } else {
@@ -548,14 +531,12 @@ impl Parser {
     }
 
     // 5-7-25
-    // parse_program in Parser: a cleaner way to handle parsing multiple statements
     pub fn parse_program(&mut self) -> Vec<Statement> {
         let mut statements = Vec::new();
         while !self.is_at_end_of_significant_tokens() {
             match self.parse_statement() {
                 Some(stmt) => statements.push(stmt),
                 None => {
-                    // Handle error: could not parse statement
                     eprintln!("Error: Could not parse statement.");
                     break;
                 }
