@@ -25,7 +25,7 @@ fn main() {
 fn run_repl() {
     println!("fddl repl");
     loop {
-        print!("> ");
+        print!("fddl % ");
         io::stdout().flush().unwrap();
 
         let mut buffer =     String::new();
