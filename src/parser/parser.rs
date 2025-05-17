@@ -351,17 +351,20 @@ impl Parser {
         Some(Statement::Block(statements))
     }
 
-    fn parse_if_statement(&mut self) -> Option<Statement> {
-        if !self.match_token(Token::If) { return None; } 
+        fn parse_if_statement(&mut self) -> Option<Statement> {
+        if !self.match_token(Token::If) {
+            eprintln!("Internal parser error: Expected 'if' token in parse_if_statement.");
+            return None;
+        }
 
         if !self.match_token(Token::LeftParen) {
-             eprintln!("Error: Expected '(' after 'if'.");
-             return None;
+            eprintln!("Error: Expected '(' after 'if'.");
+            return None;
         }
         let condition = self.parse_expression()?;
         if !self.match_token(Token::RightParen) {
-             eprintln!("Error: Expected ')' after if condition.");
-             return None;
+            eprintln!("Error: Expected ')' after if condition.");
+            return None;
         }
 
         if !self.check(&Token::LeftBrace) {
@@ -370,30 +373,36 @@ impl Parser {
         }
         let then_branch = Box::new(self.parse_statement()?);
 
-        let mut else_branch = None;
+        let mut else_branch_opt: Option<Box<Statement>> = None;
         if self.match_token(Token::Else) {
-            if !self.check(&Token::LeftBrace) && !self.check(&Token::If) {
-                eprintln!("Error: Expected '{{' for else statement body or 'if' for 'else if'.");
+            if self.check(&Token::LeftBrace) {
+                else_branch_opt = Some(Box::new(self.parse_statement()?));
+            } else if self.check(&Token::If) {
+                else_branch_opt = Some(Box::new(self.parse_statement()?));
+            } else {
+                eprintln!("Error: Expected '{{' or 'if' after 'else'.");
                 return None;
             }
-            else_branch = Some(Box::new(self.parse_statement()?));
         }
 
-        Some(Statement::IfStatement(condition, then_branch, else_branch))
+        Some(Statement::IfStatement(condition, then_branch, else_branch_opt))
     }
 
-     fn parse_while_statement(&mut self) -> Option<Statement> {
-         if !self.match_token(Token::While) { return None; }
+         fn parse_while_statement(&mut self) -> Option<Statement> {
+        if !self.match_token(Token::While) { 
+            eprintln!("Internal parser error: Expected 'while' token in parse_while_statement.");
+            return None;
+        }
 
-         if !self.match_token(Token::LeftParen) {
-              eprintln!("Error: Expected '(' after 'while'.");
-              return None;
-         }
-         let condition = self.parse_expression()?;
-         if !self.match_token(Token::RightParen) {
-              eprintln!("Error: Expected ')' after while condition.");
-              return None;
-         }
+        if !self.match_token(Token::LeftParen) {
+            eprintln!("Error: Expected '(' after 'while'.");
+            return None;
+        }
+        let condition = self.parse_expression()?;
+        if !self.match_token(Token::RightParen) {
+            eprintln!("Error: Expected ')' after while condition.");
+            return None;
+        }
 
         if !self.check(&Token::LeftBrace) {
             eprintln!("Error: Expected '{{' for while statement body.");
@@ -402,22 +411,22 @@ impl Parser {
         let body = Box::new(self.parse_statement()?);
 
         Some(Statement::WhileStatement(condition, body))
-     }
+    }
 
     fn parse_print_statement(&mut self) -> Option<Statement> {
-        if !self.match_token(Token::Print) { return None; }
+        if !self.match_token(Token::Print) { return None; } 
         let value = self.parse_expression()?;
-        if self.match_token(Token::Semicolon) {
-            Some(Statement::PrintStatement(value))
-        } else {
+        if !self.match_token(Token::Semicolon) {
             eprintln!("Error: Expected ';' after print value.");
             None
+        } else {
+            Some(Statement::PrintStatement(value))
         }
     }
 
     fn parse_variable_declaration(&mut self) -> Option<Statement> {
-        if !self.match_token(Token::Let) { return None; }
-        let token_option = self.peek_and_advance();
+        if !self.match_token(Token::Let) { return None; } 
+        let token_option = self.peek_and_advance(); 
 
         if let Some(Token::Identifier(name)) = token_option {
             let initializer = if self.match_token(Token::Equal) {
@@ -426,14 +435,14 @@ impl Parser {
                 None
             };
 
-            if self.match_token(Token::Semicolon) {
-                Some(Statement::VariableDeclaration(name, initializer))
-            } else {
+            if !self.match_token(Token::Semicolon) {
                 eprintln!("Error: Expected ';' after variable declaration.");
                 None
+            } else {
+                Some(Statement::VariableDeclaration(name, initializer))
             }
         } else {
-             eprintln!("Error: Expected variable name after 'let'.");
+            eprintln!("Error: Expected variable name after 'let'.");
             None
         }
     }

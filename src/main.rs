@@ -71,7 +71,7 @@ fn run(source: String) {
     
     loop {
 
-        if parser.is_at_end() { // Add is_at_end to Parser if not already public
+        if parser.is_at_end() { 
             break;
         }
 
