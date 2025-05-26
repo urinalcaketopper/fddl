@@ -60,18 +60,29 @@ impl Lexer {
                 } else {
                     Some(Token::Tilde)
                 }
-            }, 
+            },
+
             '/' => {
-                if self.match_char('/') {
-                    // Line comment starting with //
-                    self.line_comment() // Generate Comment token
+                if self.match_char('/') { // For line comments //
+                    // Consume the rest of the line
+                    let mut comment_text = String::new();
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        comment_text.push(self.advance());
+                    }
+                    Some(Token::Comment(comment_text)) // Or None if you want to skip comments
+                } else if self.match_char('*') { // For block comments /* ... */
+                    self.consume_block_comment() // Call a new helper function
                 } else {
-                    Some(Token::Slash)
+                    Some(Token::Slash) // Division operator
                 }
             },
+
             '#' => {
-                // Line comment starting with #
-                self.line_comment() // Generate Comment token
+                let mut comment_text = String::new();
+                while self.peek() != '\n' && !self.is_at_end() {
+                    comment_text.push(self.advance());
+                }
+                Some(Token::Comment(comment_text))
             },
 
             // One or two character tokens
@@ -124,8 +135,34 @@ impl Lexer {
         }
     }
 
-    // Helper methods
-    // Consume the current character and return it
+    fn consume_block_comment(&mut self) -> Option<Token> {
+        let mut comment_text = String::new();
+        let start_line = self.line;
+
+        loop {
+            if self.is_at_end() {
+                eprintln!("Error (L{}): Unterminated block comment", start_line);
+                if !comment_text.is_empty() {
+                    return Some(Token::Comment(comment_text));
+                }
+                return None;
+            }
+
+            let current_char = self.peek();
+            if current_char == '*' && self.peek_next() == '/' {
+                self.advance(); // Consume '*'
+                self.advance(); // Consume '/'
+                return Some(Token::Comment(comment_text));
+            } else {
+                if current_char == '\n' {
+                    self.line += 1;
+                }
+                comment_text.push(self.advance()); 
+
+            }
+        }
+    }
+
     fn advance(&mut self) -> char {
         if self.is_at_end() {
             return '\0';
@@ -135,7 +172,6 @@ impl Lexer {
         c
     }
 
-    // Check if the current character matches the expected character
     fn match_char(&mut self, expected: char) -> bool {
         if self.is_at_end() {
             return false;
@@ -149,7 +185,6 @@ impl Lexer {
         true
     }
 
-    // Look at current character
     fn peek(&self) -> char {
         if self.is_at_end() {
             '\0'
@@ -158,7 +193,6 @@ impl Lexer {
         }
     }
 
-    // Look ahead by one character
     fn peek_next(&self) -> char {
         if self.current + 1 >= self.source.len() {
             '\0'
@@ -167,12 +201,10 @@ impl Lexer {
         }
     }
 
-    // Check if we have reached the end of the source
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
     }
 
-    // Function to handle string literals
     fn string(&mut self) -> Option<Token> {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {

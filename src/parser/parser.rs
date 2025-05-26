@@ -17,7 +17,7 @@ impl Parser {
         }
     }
 
-    fn parse_for_statement(&mut self) -> Option<Statement> {
+    /* fn parse_for_statement(&mut self) -> Option<Statement> {
          if !self.match_token(Token::LeftParen) {
               eprintln!("Error: Expected '(' after 'for'.");
               return None;
@@ -59,7 +59,7 @@ impl Parser {
          eprintln!("Warning: For statement AST structure might need review.");
          None
 
-    }
+    } */
 
     fn parse_expression_statement(&mut self) -> Option<Statement> {
         let expr = self.parse_expression()?;  
@@ -309,7 +309,14 @@ impl Parser {
     }
 
     pub fn parse_statement(&mut self) -> Option<Statement> {
-        if self.check(&Token::Print) {
+        self.skip_comments();
+        if self.is_at_end() { return None; }
+        
+        if self.check(&Token::For) {
+            self.parse_for_statement()
+        } else if self.check(&Token::Func) {
+            self.parse_function_declaration()
+        } else if self.check(&Token::Print) {
             self.parse_print_statement()
         } else if self.check(&Token::Let) {
             self.parse_variable_declaration()
@@ -319,11 +326,80 @@ impl Parser {
             self.parse_if_statement()
         } else if self.check(&Token::While) {
             self.parse_while_statement()
-        } else if self.check(&Token::For) {
-            self.parse_for_statement()
         } else {
             self.parse_expression_statement()
         }
+    }
+
+        fn parse_function_declaration(&mut self) -> Option<Statement> {
+        if !self.match_token(Token::Func) { 
+            eprintln!("Internal parser error: Expected 'func' token in parse_function_declaration.");
+            return None;
+        }
+
+        let name = match self.peek_and_advance() { 
+            Some(Token::Identifier(name_str)) => name_str,
+            _ => {
+                eprintln!("Error: Expected function name (identifier) after 'func'.");
+                return None;
+            }
+        };
+
+        if !self.match_token(Token::LeftParen) {
+            eprintln!("Error: Expected '(' after function name '{}'.", name);
+            return None;
+        }
+
+        let params = self.parse_parameters()?; 
+
+        if !self.match_token(Token::RightParen) {
+            eprintln!("Error: Expected ')' after function parameters for function '{}'.", name);
+            return None;
+        }
+
+        if !self.check(&Token::LeftBrace) {
+            eprintln!("Error: Expected '{{' for function body of '{}'.", name);
+            return None;
+        }
+
+        let body_statement = self.parse_statement()?;
+
+        match body_statement {
+            Statement::Block(body_statements) => {
+                Some(Statement::FunctionDeclaration { name, params, body: body_statements })
+            }
+            _ => {
+                eprintln!("Error: Function body must be a block statement for function '{}'.", name);
+                None
+            }
+        }
+    }
+
+    fn parse_parameters(&mut self) -> Option<Vec<String>> {
+                let mut parameters = Vec::new();
+
+        if self.check(&Token::RightParen) {
+            return Some(parameters);
+        }
+
+        match self.peek_and_advance() {
+            Some(Token::Identifier(param_name)) => parameters.push(param_name),
+            _ => {
+                eprintln!("Error: Expected parameter name (identifier) in function parameter list.");
+                return None;
+            }
+        }
+
+        while self.match_token(Token::Comma) {
+            match self.peek_and_advance() {
+                Some(Token::Identifier(param_name)) => parameters.push(param_name),
+                _ => {
+                    eprintln!("Error: Expected parameter name (identifier) after comma in function parameter list.");
+                    return None;
+                }
+            }
+        }
+        Some(parameters)
     }
 
     fn parse_block_statement(&mut self) -> Option<Statement> {
@@ -388,7 +464,7 @@ impl Parser {
         Some(Statement::IfStatement(condition, then_branch, else_branch_opt))
     }
 
-         fn parse_while_statement(&mut self) -> Option<Statement> {
+        fn parse_while_statement(&mut self) -> Option<Statement> {
         if !self.match_token(Token::While) { 
             eprintln!("Internal parser error: Expected 'while' token in parse_while_statement.");
             return None;
@@ -411,6 +487,94 @@ impl Parser {
         let body = Box::new(self.parse_statement()?);
 
         Some(Statement::WhileStatement(condition, body))
+    }
+
+    fn parse_for_statement(&mut self) -> Option<Statement> {
+        if !self.match_token(Token::For) { return None; } // Consume 'for'
+
+        if !self.match_token(Token::LeftParen) {
+            eprintln!("Error: Expected '(' after 'for'.");
+            return None;
+        }
+
+        // 1. Initializer Statement
+        self.skip_comments(); // Skip comments before initializer part
+        let initializer: Box<Statement>;
+        if self.check(&Token::Let) {
+            self.advance(); // Consume 'let'
+            let var_name = match self.peek_and_advance() {
+                Some(Token::Identifier(name_str)) => name_str,
+                _ => {
+                    eprintln!("Error: Expected variable name after 'let' in for-loop initializer.");
+                    return None;
+                }
+            };
+            let var_initializer_expr: Option<Expression> = if self.match_token(Token::Equal) {
+                self.skip_comments(); // Skip comments before the expression value
+                self.parse_expression()
+            } else {
+                None
+            };
+            initializer = Box::new(Statement::VariableDeclaration(var_name, var_initializer_expr));
+            self.skip_comments(); // Skip comments before the semicolon separator
+            if !self.match_token(Token::Semicolon) {
+                eprintln!("Error: Expected ';' after 'let' declaration in for-loop initializer.");
+                return None;
+            }
+        } else if self.check(&Token::Semicolon) { // Check for ';' for empty initializer
+            self.advance(); // Consume the ';'
+            initializer = Box::new(Statement::ExpressionStatement(Expression::Literal(Literal::Nil)));
+        } else { // Expression initializer
+            let init_expr = self.parse_expression()?;
+            initializer = Box::new(Statement::ExpressionStatement(init_expr));
+            self.skip_comments(); // Skip comments before the semicolon separator
+            if !self.match_token(Token::Semicolon) {
+                eprintln!("Error: Expected ';' after for-loop initializer expression.");
+                return None;
+            }
+        }
+
+        // 2. Condition Expression
+        self.skip_comments(); // Skip comments before condition part
+        let condition: Expression;
+        if self.check(&Token::Semicolon) { // Check for ';' for empty condition
+            self.advance(); // Consume the ';'
+            condition = Expression::Literal(Literal::Boolean(true)); // Default to true
+        } else {
+            condition = self.parse_expression()?;
+            self.skip_comments(); // Skip comments before the semicolon separator
+            if !self.match_token(Token::Semicolon) {
+                eprintln!("Error: Expected ';' after for-loop condition.");
+                return None;
+            }
+        }
+
+        // 3. Increment Statement
+        self.skip_comments(); // <--- CRUCIAL FIX: Skip comments before increment part
+        let increment: Box<Statement>;
+        if self.check(&Token::RightParen) { // Empty increment (if ')' is next)
+            increment = Box::new(Statement::ExpressionStatement(Expression::Literal(Literal::Nil)));
+        } else {
+            let incr_expr = self.parse_expression()?; // Now this will see past the comment
+            increment = Box::new(Statement::ExpressionStatement(incr_expr));
+        }
+
+        self.skip_comments(); // Skip comments before ')'
+        if !self.match_token(Token::RightParen) {
+            eprintln!("Error: Expected ')' after for-loop clauses.");
+            return None;
+        }
+
+        // 4. Body Statement (must be a block)
+        self.skip_comments(); // Skip comments before '{'
+        if !self.check(&Token::LeftBrace) {
+            eprintln!("Error: Expected '{{' for for-loop body.");
+            return None;
+        }
+        // parse_statement() already calls skip_comments() at its beginning
+        let body = Box::new(self.parse_statement()?);
+
+        Some(Statement::ForStatement(initializer, condition, increment, body))
     }
 
     fn parse_print_statement(&mut self) -> Option<Statement> {
@@ -476,6 +640,12 @@ impl Parser {
             let token = self.tokens[self.current].clone();
             self.current += 1;
             Some(token)
+        }
+    }
+
+    fn skip_comments(&mut self) {
+        while !self.is_at_end() && matches!(self.current_token(), Token::Comment(_)) {
+            self.advance();
         }
     }
 
