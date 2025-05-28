@@ -61,10 +61,9 @@ To get started with `fddl`, you'll first need to have the Rust programming langu
 
 Once Rust and Cargo are set up:
 
-1.  **Clone the Repository** (if you haven't already):
+1.  **Clone the Repository**:
     ```sh
-    # Replace <repository_url> with the actual URL of your fddl repository
-    git clone <repository_url>
+    git clone https://git.fddl.dev/fddl/fddl.git
     cd fddl
     ```
 
