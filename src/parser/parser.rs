@@ -17,57 +17,46 @@ impl Parser {
         }
     }
 
-    /* fn parse_for_statement(&mut self) -> Option<Statement> {
-         if !self.match_token(Token::LeftParen) {
-              eprintln!("Error: Expected '(' after 'for'.");
-              return None;
-         }
+    // fn parse_expression_statement(&mut self) -> Option<Statement> {
+    //     let expr = self.parse_expression()?;  
+    //     if self.match_token(Token::Semicolon) {
+    //         Some(Statement::ExpressionStatement(expr))
+    //     } else {
+    //         eprintln!("Error: Expected ';' after expression statement.");
+    //         None
+    //     }
+    // }
 
-         let initializer = if self.match_token(Token::Semicolon) {
-            None 
-         } else if self.match_token(Token::Let) {
-             Some(Box::new(self.parse_variable_declaration()?))
-         } else {
-            let expr_stmt = self.parse_expression_statement()?;
-            Some(Box::new(expr_stmt))
-         };
-         let condition = if self.check(&Token::Semicolon) {
-             eprintln!("Error: For loop condition is required (for now).");
-             return None;
-         } else {
-             self.parse_expression()?  
-         };
+    fn parse_assignment_or_expression_statement(&mut self) -> Option<Statement> {
+        let expr = self.parse_expression()?;
 
-         if !self.match_token(Token::Semicolon) {
-             eprintln!("Error: Expected ';' after for loop condition.");
-             return None;
-         }
+        self.skip_comments(); // Skip comments before semicolon
 
-         let increment = if self.check(&Token::RightParen) {
-             None
-         } else {
-             Some(self.parse_expression()?)  
-         };
+        if self.check(&Token::Equal) {
+            self.advance();
 
-         if !self.match_token(Token::RightParen) {
-             eprintln!("Error: Expected ')' after for loop clauses.");
-             return None;
-         }
+            match expr {
+                Expression::Variable(target_name) => {
+                    self.skip_comments();
+                    let value_expr = self.parse_expression()?;
 
-         let body = Box::new(self.parse_statement()?);
-
-         eprintln!("Warning: For statement AST structure might need review.");
-         None
-
-    } */
-
-    fn parse_expression_statement(&mut self) -> Option<Statement> {
-        let expr = self.parse_expression()?;  
-        if self.match_token(Token::Semicolon) {
+                    self.skip_comments();
+                    if !self.match_token(Token::Semicolon) {
+                        eprintln!("Error: Expected ';' after assignment.");
+                        return None;
+                    }
+                    Some(Statement::Assignment { target_name, value: value_expr })
+                }
+                _ => {
+                    eprintln!("Error: Invalid assignment target. Must be an identifier.");
+                    return None;
+                }
+            }
+        } else if self.match_token(Token::Semicolon) {
             Some(Statement::ExpressionStatement(expr))
         } else {
-            eprintln!("Error: Expected ';' after expression statement.");
-            None
+            eprintln!("Error: Expected '=' for assignment or ';' after expression.");
+            return None;
         }
     }
 
@@ -101,6 +90,10 @@ impl Parser {
             Token::False => {
                 self.advance();   
                 Some(Expression::Literal(Literal::Boolean(false)))
+            }
+            Token::Nil => {
+                self.advance();
+                Some(Expression::Literal(Literal::Nil))
             }
             Token::Identifier(name) => {
                 self.advance();   
@@ -312,7 +305,9 @@ impl Parser {
         self.skip_comments();
         if self.is_at_end() { return None; }
         
-        if self.check(&Token::For) {
+        if self.check(&Token::Return) {
+            self.parse_return_statement()
+        } else if self.check(&Token::For) {
             self.parse_for_statement()
         } else if self.check(&Token::Func) {
             self.parse_function_declaration()
@@ -327,7 +322,7 @@ impl Parser {
         } else if self.check(&Token::While) {
             self.parse_while_statement()
         } else {
-            self.parse_expression_statement()
+            self.parse_assignment_or_expression_statement()
         }
     }
 
@@ -732,6 +727,41 @@ impl Parser {
     pub fn is_at_end(&self) -> bool {
         if self.current >= self.tokens.len() { return true; }
         matches!(self.tokens[self.current], Token::EOF)
+    }
+
+    //5-28/25
+    fn parse_return_statement(&mut self) -> Option<Statement> {
+        if !self.match_token(Token::Return) {
+            eprintln!("Internal parser error: Expected 'return' token.");
+            return None;
+        }
+
+        self.skip_comments(); // Skip comments before the expression
+
+        if self.check(&Token::Semicolon) {
+            self.advance();
+            return Some(Statement::ReturnStatement(None));
+        }
+
+        if self.is_at_end() {
+            eprintln!("Error: Expected expression or ';' after 'return'.");
+            return None;
+        }
+
+        match self.parse_expression() {
+            Some(expr) => {
+                self.skip_comments(); // Skip comments after the expression
+                if !self.match_token(Token::Semicolon) {
+                    eprintln!("Error: Expected ';' after return expression.");
+                    return None;
+                }
+                Some(Statement::ReturnStatement(Some(expr)))
+            }
+            None => {
+                eprintln!("Error: Invalid expression after 'return'.");
+                None
+            }
+        }
     }
     
 }

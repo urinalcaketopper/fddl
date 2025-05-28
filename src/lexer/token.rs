@@ -35,6 +35,7 @@ pub enum Token {
     Else,
     True,
     False,
+    Nil,
     Let,
     Const,
     Func,

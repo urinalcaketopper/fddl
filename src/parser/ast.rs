@@ -67,4 +67,8 @@ pub enum Statement {
         body: Vec<Statement>,
     },
     ReturnStatement(Option<Expression>),
+    Assignment {
+        target_name: String,
+        value: Expression,
+    },
 }

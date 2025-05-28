@@ -6,9 +6,9 @@ use std::env;
 use std::fs;
 use std::io::{self, Write};
 
-// use lexer::Lexer;
 use fddl::lexer::Lexer;
 use fddl::parser::Parser;
+use fddl::interpreter::evaluator::Evaluator;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -23,7 +23,8 @@ fn main() {
 
 // basic REPL
 fn run_repl() {
-    println!("fddl repl");
+    println!("FDDL REPL");
+    println!("---------");
     loop {
         print!("fddl % ");
         io::stdout().flush().unwrap();
@@ -45,45 +46,40 @@ fn run_file(path: &str) {
     run(source);
 }
 
-// runs source code
 fn run(source: String) {
-    println!("Source: {}", source.trim()); // prints source for debugging
+    println!("Source: {}", source.trim());
 
     let mut lexer = Lexer::new(source);
     let tokens = lexer.scan_tokens();
 
-    // old code begins
-    // println!("Tokens:");
-    // for token in &tokens { // Iterate by reference if you use tokens later
-    //     println!("{:?}", token);
-    // }
-    // println!("---");
-    // old code ends - delete if not needed
+    println!("Tokens: {:?}", tokens);
 
-    let mut parser = Parser::new(tokens); // Create a new parser instance
-    let ast_statements = parser.parse_program(); // NEW!
-
-    println!("Parsed Statements (AST):");
-
-    for stmt in ast_statements {
-        println!("{:?}", stmt);
-    }
+    let mut parser = Parser::new(tokens);
     
-    loop {
+    let program_ast = parser.parse_program(); 
 
-        if parser.is_at_end() { 
-            break;
+    if !program_ast.is_empty() { 
+        println!("Parsed Statements (AST):");
+        for stmt in &program_ast {
+            println!("{:?}", stmt);
         }
-
-        match parser.parse_statement() { 
-            Some(statement) => {
-                println!("{:?}", statement); 
-            }
-            None => {
-                println!("Parser returned None, might be an error or unhandled EOF by parse_statement.");
-                break;
-            }
-        }
-
+    } else {
+        println!("No AST generated or parsing failed.");
     }
+
+
+    if !program_ast.is_empty() {
+        println!("Output:"); 
+        let mut evaluator = Evaluator::new();
+        match evaluator.evaluate_program(program_ast) {
+            Ok(()) => { /* Program executed successfully */ }
+            Err(e) => {
+                eprintln!("Runtime Error: {:?}", e);
+            }
+        }
+    } else {
+        println!("Skipping execution.");
+    }
+
+    println!("---"); 
 }

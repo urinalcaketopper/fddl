@@ -269,6 +269,7 @@ impl Lexer {
             "else" => Token::Else,
             "true" => Token::True,
             "false" => Token::False,
+            "nil" => Token::Nil,
             "let" => Token::Let,
             "const" => Token::Const,
             "func" => Token::Func,
