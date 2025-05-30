@@ -83,6 +83,14 @@ impl Evaluator {
         Ok(())
     }
 
+    fn is_truthy(value: &FddlValue) -> bool {
+        match value {
+            FddlValue::Boolean(false) => false,
+            FddlValue::Nil => false,
+            _ => true,
+        }
+    }
+
     fn evaluate_statement(&mut self, statement: &Statement) -> Result<(), RuntimeError> {
         match statement {
             Statement::PrintStatement(expr) => {
@@ -149,6 +157,7 @@ impl Evaluator {
                             ))
                         }
                     }
+
                     Operator::Not => { 
                         if let FddlValue::Boolean(b) = right_val {
                             Ok(FddlValue::Boolean(!b))
@@ -158,12 +167,14 @@ impl Evaluator {
                             ))
                         }
                     }
+
                     Operator::Some => { 
-                        Ok(right_val) 
+                        Ok(FddlValue::Boolean(!matches!(right_val, FddlValue::Nil))) 
                     }
+
                     Operator::Almost => {
                         if let FddlValue::Number(n) = right_val {
-                            Ok(FddlValue::Number(n.round())) 
+                            Ok(FddlValue::Number(n.floor())) 
                         } else {
                             Err(RuntimeError::TypeMismatch(
                                 "Operand for unary '~' (Almost) must be a number for this example.".to_string(),
@@ -182,6 +193,12 @@ impl Evaluator {
                 let right_val = self.evaluate_expression(right_expr)?;
 
                 match op {
+                    Operator::EqualEqual => { // For ==
+                        Ok(FddlValue::Boolean(left_val == right_val))
+                    }
+                    Operator::NotEqual => { // For !=
+                        Ok(FddlValue::Boolean(left_val != right_val))
+                    }
                     Operator::Plus => {
                         if let (FddlValue::Number(l), FddlValue::Number(r)) = (&left_val, &right_val) {
                             Ok(FddlValue::Number(l + r))
@@ -232,6 +249,42 @@ impl Evaluator {
                         } else {
                             Err(RuntimeError::TypeMismatch(
                                 format!("Operands for '%' must be numbers. Got {:?} and {:?}", left_val, right_val)
+                            ))
+                        }
+                    }
+                    Operator::Greater => {
+                        if let (FddlValue::Number(l), FddlValue::Number(r)) = (&left_val, &right_val) {
+                            Ok(FddlValue::Boolean(l > r))
+                        } else {
+                            Err(RuntimeError::TypeMismatch(
+                                "Operands for '>' must be numbers.".to_string()
+                            ))
+                        }
+                    }
+                    Operator::GreaterEqual => {
+                        if let (FddlValue::Number(l), FddlValue::Number(r)) = (&left_val, &right_val) {
+                            Ok(FddlValue::Boolean(l >= r))
+                        } else {
+                            Err(RuntimeError::TypeMismatch(
+                                "Operands for '>=' must be numbers.".to_string()
+                            ))
+                        }
+                    }
+                    Operator::Less => {
+                        if let (FddlValue::Number(l), FddlValue::Number(r)) = (&left_val, &right_val) {
+                            Ok(FddlValue::Boolean(l < r))
+                        } else {
+                            Err(RuntimeError::TypeMismatch(
+                                "Operands for '<' must be numbers.".to_string()
+                            ))
+                        }
+                    }
+                    Operator::LessEqual => {
+                        if let (FddlValue::Number(l), FddlValue::Number(r)) = (&left_val, &right_val) {
+                            Ok(FddlValue::Boolean(l <= r))
+                        } else {
+                            Err(RuntimeError::TypeMismatch(
+                                "Operands for '<=' must be numbers.".to_string()
                             ))
                         }
                     }
