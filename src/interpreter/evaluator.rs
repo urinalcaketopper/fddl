@@ -44,7 +44,7 @@ impl Environment {
 
     pub fn get(&self, name: &str) -> Result<FddlValue, RuntimeError> {
         match self.values.get(name) {
-            Some(value) => Ok(value.clone()), // Clone to return an owned value
+            Some(value) => Ok(value.clone()), 
             None => Err(RuntimeError::UndefinedVariable(format!(
                 "Undefined variable '{}'.",
                 name

@@ -1,0 +1,379 @@
+cargo clippy
+    Checking fddl v0.0.3 (/home/noro/Documents/words/rust/fddl)
+warning: unused import: `crate::lexer::Lexer`
+ --> src/parser/parser.rs:3:5
+  |
+3 | use crate::lexer::Lexer;
+  |     ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `operator_token`
+   --> src/parser/parser.rs:222:17
+    |
+222 |             let operator_token = self.current_token().clone();
+    |                 ^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_operator_token`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `operator_token`
+   --> src/parser/parser.rs:237:17
+    |
+237 |             let operator_token = self.current_token().clone();
+    |                 ^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_operator_token`
+
+warning: method `line_comment` is never used
+   --> src/lexer/lexer.rs:300:8
+    |
+11  | impl Lexer {
+    | ---------- method in this implementation
+...
+300 |     fn line_comment(&mut self) -> Option<Token>{
+    |        ^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` on by default
+
+warning: module has the same name as its containing module
+ --> src/lexer/mod.rs:1:1
+  |
+1 | pub mod lexer;
+  | ^^^^^^^^^^^^^^
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#module_inception
+  = note: `#[warn(clippy::module_inception)]` on by default
+
+warning: module has the same name as its containing module
+ --> src/parser/mod.rs:2:1
+  |
+2 | pub mod parser;
+  | ^^^^^^^^^^^^^^^
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#module_inception
+
+warning: unneeded `return` statement
+  --> src/parser/parser.rs:42:21
+   |
+42 |                     return None;
+   |                     ^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_return
+   = note: `#[warn(clippy::needless_return)]` on by default
+help: remove `return`
+   |
+42 -                     return None;
+42 +                     None
+   |
+
+warning: this `if` has identical blocks
+   --> src/parser/parser.rs:439:46
+    |
+439 |               if self.check(&Token::LeftBrace) {
+    |  ______________________________________________^
+440 | |                 else_branch_opt = Some(Box::new(self.parse_statement()?));
+441 | |             } else if self.check(&Token::If) {
+    | |_____________^
+    |
+note: same as this
+   --> src/parser/parser.rs:441:46
+    |
+441 |               } else if self.check(&Token::If) {
+    |  ______________________________________________^
+442 | |                 else_branch_opt = Some(Box::new(self.parse_statement()?));
+443 | |             } else {
+    | |_____________^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#if_same_then_else
+    = note: `#[warn(clippy::if_same_then_else)]` on by default
+
+warning: unneeded late initialization
+   --> src/parser/parser.rs:539:9
+    |
+539 |         let increment: Box<Statement>;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_late_init
+    = note: `#[warn(clippy::needless_late_init)]` on by default
+help: move the declaration `increment` here and remove the assignments from the branches
+    |
+539 ~
+540 ~         let increment: Box<Statement> = if self.check(&Token::RightParen) { // Empty increment (if ')' is next)
+541 ~             Box::new(Statement::ExpressionStatement(Expression::Literal(Literal::Nil)))
+542 |         } else {
+543 |             let incr_expr = self.parse_expression()?; // Now this will see past the comment
+544 ~             Box::new(Statement::ExpressionStatement(incr_expr))
+545 ~         };
+    |
+
+warning: accessing first element with `self.tokens.get(0)`
+   --> src/parser/parser.rs:691:14
+    |
+691 |              self.tokens.get(0).unwrap_or(&Token::EOF)
+    |              ^^^^^^^^^^^^^^^^^^ help: try: `self.tokens.first()`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#get_first
+    = note: `#[warn(clippy::get_first)]` on by default
+
+warning: you should consider adding a `Default` implementation for `Environment`
+  --> src/interpreter/evaluator.rs:35:5
+   |
+35 | /     pub fn new() -> Self {
+36 | |         Environment {
+37 | |             values: HashMap::new(),
+38 | |         }
+39 | |     }
+   | |_____^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#new_without_default
+   = note: `#[warn(clippy::new_without_default)]` on by default
+help: try adding this
+   |
+34 + impl Default for Environment {
+35 +     fn default() -> Self {
+36 +         Self::new()
+37 +     }
+38 + }
+   |
+
+warning: you should consider adding a `Default` implementation for `Evaluator`
+  --> src/interpreter/evaluator.rs:73:5
+   |
+73 | /     pub fn new() -> Self {
+74 | |         Evaluator {
+75 | |             environment: Environment::new(),
+76 | |         }
+77 | |     }
+   | |_____^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#new_without_default
+help: try adding this
+   |
+72 + impl Default for Evaluator {
+73 +     fn default() -> Self {
+74 +         Self::new()
+75 +     }
+76 + }
+   |
+
+warning: `fddl` (lib) generated 12 warnings (run `cargo clippy --fix --lib -p fddl` to apply 5 suggestions)
+warning: unused import: `parser::*`
+ --> src/parser/mod.rs:5:9
+  |
+5 | pub use parser::*;
+  |         ^^^^^^^^^
+
+warning: unused import: `std::fs`
+ --> src/main.rs:6:5
+  |
+6 | use std::fs;
+  |     ^^^^^^^
+
+warning: unused import: `self`
+ --> src/main.rs:7:15
+  |
+7 | use std::io::{self, Write};
+  |               ^^^^
+
+warning: unused import: `Expression`
+  --> src/main.rs:12:36
+   |
+12 | use fddl::parser::ast::{Statement, Expression};
+   |                                    ^^^^^^^^^^
+
+warning: function `run` is never used
+  --> src/main.rs:84:4
+   |
+84 | fn run(source: String) {
+   |    ^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: multiple associated items are never used
+   --> src/lexer/lexer.rs:12:12
+    |
+11  | impl Lexer {
+    | ---------- associated items in this implementation
+12  |     pub fn new(source: String) -> Self {
+    |            ^^^
+...
+21  |     pub fn scan_tokens(&mut self) -> Vec<Token> {
+    |            ^^^^^^^^^^^
+...
+40  |     fn scan_token(&mut self) -> Option<Token> {
+    |        ^^^^^^^^^^
+...
+137 |     fn consume_block_comment(&mut self) -> Option<Token> {
+    |        ^^^^^^^^^^^^^^^^^^^^^
+...
+165 |     fn advance(&mut self) -> char {
+    |        ^^^^^^^
+...
+174 |     fn match_char(&mut self, expected: char) -> bool {
+    |        ^^^^^^^^^^
+...
+187 |     fn peek(&self) -> char {
+    |        ^^^^
+...
+195 |     fn peek_next(&self) -> char {
+    |        ^^^^^^^^^
+...
+203 |     fn is_at_end(&self) -> bool {
+    |        ^^^^^^^^^
+...
+207 |     fn string(&mut self) -> Option<Token> {
+    |        ^^^^^^
+...
+231 |     fn number(&mut self) -> Option<Token> {
+    |        ^^^^^^
+...
+254 |     fn identifier(&mut self) -> Option<Token> {
+    |        ^^^^^^^^^^
+...
+291 |     fn is_alpha(&self, c: char) -> bool {
+    |        ^^^^^^^^
+...
+295 |     fn is_alphanumeric(&self, c: char) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+300 |     fn line_comment(&mut self) -> Option<Token>{
+    |        ^^^^^^^^^^^^
+
+warning: multiple variants are never constructed
+  --> src/lexer/token.rs:9:5
+   |
+2  | pub enum Token {
+   |          ----- variants in this enum
+...
+9  |     Dot,          // .
+   |     ^^^
+10 |     Minus,        // -
+   |     ^^^^^
+11 |     Plus,         // +
+   |     ^^^^
+12 |     Semicolon,    // ;
+13 |     Slash,        // /
+   |     ^^^^^
+14 |     Star,         // *
+   |     ^^^^
+15 |     Percent,      // %
+   |     ^^^^^^^
+16 |     Equal,        // =
+17 |     BangEqual,    // !=
+   |     ^^^^^^^^^
+18 |     EqualEqual,   // ==
+   |     ^^^^^^^^^^
+19 |     Greater,      // >
+   |     ^^^^^^^
+20 |     GreaterEqual, // >=
+   |     ^^^^^^^^^^^^
+21 |     Less,         // <
+   |     ^^^^
+22 |     LessEqual,    // <=
+   |     ^^^^^^^^^
+23 |     Tilde,        // ~
+   |     ^^^^^
+24 |     TildeEqual,   // ~=
+   |     ^^^^^^^^^^
+...
+27 |     Identifier(String),
+   |     ^^^^^^^^^^
+28 |     StringLiteral(String),
+   |     ^^^^^^^^^^^^^
+29 |     Number(f64),
+   |     ^^^^^^
+...
+32 |     And,
+   |     ^^^
+33 |     Or,
+   |     ^^
+...
+36 |     True,
+   |     ^^^^
+37 |     False,
+   |     ^^^^^
+38 |     Nil,
+   |     ^^^
+39 |     Let,
+40 |     Const,
+   |     ^^^^^
+...
+46 |     Pub,
+   |     ^^^
+47 |     Sym,
+   |     ^^^
+48 |     Module,
+   |     ^^^^^^
+49 |     Import,
+   |     ^^^^^^
+50 |     Some,
+   |     ^^^^
+51 |     Not,
+   |     ^^^
+...
+54 |     Comment(String),
+   |     ^^^^^^^
+...
+57 |     Error(String),
+   |     ^^^^^
+   |
+   = note: `Token` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: name `EOF` contains a capitalized acronym
+  --> src/lexer/token.rs:59:5
+   |
+59 |     EOF,
+   |     ^^^ help: consider making the acronym lowercase, except the initial letter (notice the capitalization): `Eof`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#upper_case_acronyms
+   = note: `#[warn(clippy::upper_case_acronyms)]` on by default
+
+warning: variant name ends with the enum's name
+  --> src/parser/ast.rs:57:5
+   |
+57 |     ExpressionStatement(Expression),
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#enum_variant_names
+   = note: `#[warn(clippy::enum_variant_names)]` on by default
+
+warning: variant name ends with the enum's name
+  --> src/parser/ast.rs:58:5
+   |
+58 |     PrintStatement(Expression),
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#enum_variant_names
+
+warning: variant name ends with the enum's name
+  --> src/parser/ast.rs:61:5
+   |
+61 |     IfStatement(Expression, Box<Statement>, Option<Box<Statement>>),
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#enum_variant_names
+
+warning: variant name ends with the enum's name
+  --> src/parser/ast.rs:62:5
+   |
+62 |     WhileStatement(Expression, Box<Statement>),
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#enum_variant_names
+
+warning: variant name ends with the enum's name
+  --> src/parser/ast.rs:63:5
+   |
+63 |     ForStatement(Box<Statement>, Expression, Box<Statement>, Box<Statement>),
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#enum_variant_names
+
+warning: variant name ends with the enum's name
+  --> src/parser/ast.rs:69:5
+   |
+69 |     ReturnStatement(Option<Expression>),
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#enum_variant_names
+
+warning: `fddl` (bin "fddl") generated 23 warnings (9 duplicates) (run `cargo clippy --fix --bin "fddl"` to apply 4 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.41s
+noro@saturn:~/Documents/words/rust/fddl$

@@ -1,6 +1,6 @@
 use crate::lexer::token::Token;
 use crate::parser::ast::{Expression, Statement, Literal, Operator}; 
-use crate::lexer::Lexer;
+// use crate::lexer::Lexer;
 
 pub struct Parser {
     tokens: Vec<Token>,
@@ -16,16 +16,6 @@ impl Parser {
             current: 0,
         }
     }
-
-    // fn parse_expression_statement(&mut self) -> Option<Statement> {
-    //     let expr = self.parse_expression()?;  
-    //     if self.match_token(Token::Semicolon) {
-    //         Some(Statement::ExpressionStatement(expr))
-    //     } else {
-    //         eprintln!("Error: Expected ';' after expression statement.");
-    //         None
-    //     }
-    // }
 
     fn parse_assignment_or_expression_statement(&mut self) -> Option<Statement> {
         let expr = self.parse_expression()?;
@@ -61,7 +51,7 @@ impl Parser {
     }
 
     fn parse_expression(&mut self) -> Option<Expression> {
-        // Keeping old tests here for reference until release.
+        // Keeping old tests here for reference
         // self.parse_primary(); // Start with the simplest elements
         // self.parse_unary() // handles unary operators ('-' and '~')
         // self.parse_term() // handles binary operators ('+', '-', '*', '/')
@@ -448,8 +438,6 @@ impl Parser {
         if self.match_token(Token::Else) {
             if self.check(&Token::LeftBrace) {
                 else_branch_opt = Some(Box::new(self.parse_statement()?));
-            } else if self.check(&Token::If) {
-                else_branch_opt = Some(Box::new(self.parse_statement()?));
             } else {
                 eprintln!("Error: Expected '{{' or 'if' after 'else'.");
                 return None;
@@ -546,13 +534,12 @@ impl Parser {
 
         // 3. Increment Statement
         self.skip_comments(); // <--- CRUCIAL FIX: Skip comments before increment part
-        let increment: Box<Statement>;
-        if self.check(&Token::RightParen) { // Empty increment (if ')' is next)
-            increment = Box::new(Statement::ExpressionStatement(Expression::Literal(Literal::Nil)));
+        let increment: Box<Statement> = if self.check(&Token::RightParen) {
+            Box::new(Statement::ExpressionStatement(Expression::Literal(Literal::Nil)))
         } else {
-            let incr_expr = self.parse_expression()?; // Now this will see past the comment
-            increment = Box::new(Statement::ExpressionStatement(incr_expr));
-        }
+            let incr_expr = self.parse_expression()?;
+            Box::new(Statement::ExpressionStatement(incr_expr))
+        };
 
         self.skip_comments(); // Skip comments before ')'
         if !self.match_token(Token::RightParen) {

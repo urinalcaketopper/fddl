@@ -3,13 +3,13 @@ mod parser;
 mod compiler;
 
 use std::env;
-use std::fs;
-use std::io::{self, Write};
+// use std::fs;
+use std::io::Write;
 
 use fddl::lexer::Lexer;
-use fddl::parser::Parser;
+use fddl::parser::parser::Parser;
 use fddl::interpreter::evaluator::Evaluator;
-use fddl::parser::ast::{Statement, Expression};
+use fddl::parser::ast::Statement;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -81,40 +81,41 @@ fn run_file(path: &str) {
     }
 }
 
-fn run(source: String) {
-    println!("Source: {}", source.trim());
+// fn run(source: String) {
+//     println!("Source: {}", source.trim());
 
-    let mut lexer = Lexer::new(source);
-    let tokens = lexer.scan_tokens();
+//     let mut lexer = Lexer::new(source);
+//     let tokens = lexer.scan_tokens();
 
-    println!("Tokens: {:?}", tokens);
+//     println!("Tokens: {:?}", tokens);
 
-    let mut parser = Parser::new(tokens);
+//     let mut parser = Parser::new(tokens);
     
-    let program_ast = parser.parse_program(); 
+//     let program_ast = parser.parse_program(); 
 
-    if !program_ast.is_empty() { 
-        println!("Parsed Statements (AST):");
-        for stmt in &program_ast {
-            println!("{:?}", stmt);
-        }
-    } else {
-        println!("No AST generated or parsing failed.");
-    }
+//     if !program_ast.is_empty() { 
+//         println!("Parsed Statements (AST):");
+//         for stmt in &program_ast {
+//             println!("{:?}", stmt);
+//         }
+//     } else {
+//         println!("No AST generated or parsing failed.");
+//     }
 
 
-    if !program_ast.is_empty() {
-        println!("Output:"); 
-        let mut evaluator = Evaluator::new();
-        match evaluator.evaluate_program(program_ast) {
-            Ok(()) => { /* Program executed successfully */ }
-            Err(e) => {
-                eprintln!("Runtime Error: {:?}", e);
-            }
-        }
-    } else {
-        println!("Skipping execution.");
-    }
+//     if !program_ast.is_empty() {
+//         println!("Output:"); 
+//         let mut evaluator = Evaluator::new();
+//         match evaluator.evaluate_program(program_ast) {
+//             Ok(()) => { /* Program executed successfully */ }
+//             Err(e) => {
+//                 eprintln!("Runtime Error: {:?}", e);
+//             }
+//         }
+//     } else {
+//         println!("Skipping execution.");
+//     }
 
-    println!("---"); 
-}
+//     println!("---"); 
+// }
+// DEAD CODE?

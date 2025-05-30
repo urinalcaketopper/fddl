@@ -1,7 +1,6 @@
 use crate::lexer::token::Token;
 
 #[allow(dead_code)]
-
 pub struct Lexer {
     source: Vec<char>,
     start: usize,
@@ -297,15 +296,15 @@ impl Lexer {
         c.is_alphanumeric() || c == '_'
     }
 
-    // Function to handle line comments
-    fn line_comment(&mut self) -> Option<Token>{
-        let mut comment = String::new();
+    // fn line_comment(&mut self) -> Option<Token>{
+    //     let mut comment = String::new();
 
-        while self.peek() != '\n' && !self.is_at_end() {
-            comment.push(self.advance());
-        }
+    //     while self.peek() != '\n' && !self.is_at_end() {
+    //         comment.push(self.advance());
+    //     }
 
-        Some(Token::Comment(comment))
-    }
+    //     Some(Token::Comment(comment))
+    // } 
+    // DEAD CODE? 
 }
 
