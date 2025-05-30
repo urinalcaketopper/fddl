@@ -1,4 +1,5 @@
 use crate::parser::ast::{Expression, Statement, Literal, Operator};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum FddlValue {
@@ -23,13 +24,56 @@ impl std::fmt::Display for FddlValue {
 pub enum RuntimeError {
     TypeMismatch(String),
     UndefinedVariable(String),
+    DivisionByZero,
 }
 
-pub struct Evaluator;
+pub struct Environment {
+    values: HashMap<String, FddlValue>,
+}
+
+impl Environment {
+    pub fn new() -> Self {
+        Environment {
+            values: HashMap::new(),
+        }
+    }
+
+    pub fn define(&mut self, name: String, value: FddlValue) {
+        self.values.insert(name, value);
+    }
+
+    pub fn get(&self, name: &str) -> Result<FddlValue, RuntimeError> {
+        match self.values.get(name) {
+            Some(value) => Ok(value.clone()), // Clone to return an owned value
+            None => Err(RuntimeError::UndefinedVariable(format!(
+                "Undefined variable '{}'.",
+                name
+            ))),
+        }
+    }
+
+    pub fn assign(&mut self, name: &str, value: FddlValue) -> Result<(), RuntimeError> {
+        if self.values.contains_key(name) {
+            self.values.insert(name.to_string(), value);
+            Ok(())
+        } else {
+            Err(RuntimeError::UndefinedVariable(format!(
+                "Cannot assign to undefined variable '{}'.",
+                name
+            )))
+        }
+    }
+}
+
+pub struct Evaluator {
+    environment: Environment,
+}
 
 impl Evaluator {
     pub fn new() -> Self {
-        Evaluator
+        Evaluator {
+            environment: Environment::new(),
+        }
     }
 
     pub fn evaluate_program(&mut self, statements: Vec<Statement>) -> Result<(), RuntimeError> {
@@ -50,6 +94,27 @@ impl Evaluator {
                 self.evaluate_expression(expr)?; 
             }
 
+            Statement::VariableDeclaration(name, initializer) => {
+                let value = match initializer {
+                    Some(init_expr) => self.evaluate_expression(init_expr)?,
+                    None => FddlValue::Nil,
+                };
+                self.environment.define(name.clone(), value);
+            }
+
+            Statement::Assignment { target_name, value } => {
+                let val_to_assign = self.evaluate_expression(value)?;
+                self.environment.assign(target_name, val_to_assign)?;
+            }
+
+            Statement::Block(statements) => {
+                for stmt_in_block in statements {
+                    self.evaluate_statement(stmt_in_block)?;
+                }
+            }
+
+            // TODO: IfStatement, WhileStatement, ForStatement, FunctionDeclaration, ReturnStatement
+
             _ => {
                 println!("Interpreter: Skipping unimplemented statement: {:?}", statement);
             }
@@ -66,9 +131,13 @@ impl Evaluator {
                     Literal::String(s) => Ok(FddlValue::String(s.clone())),
                     Literal::Nil => Ok(FddlValue::Nil),
                 }
-            }
+            }, 
 
-            Expression::Unary(op, right_expr) => {
+            Expression::Variable(name) => {
+                self.environment.get(name)
+            }, 
+
+            Expression::Unary(op, right_expr) => { 
                 let right_val = self.evaluate_expression(right_expr)?;
                 match op {
                     Operator::Minus => {
@@ -80,7 +149,7 @@ impl Evaluator {
                             ))
                         }
                     }
-                    Operator::Not => {
+                    Operator::Not => { 
                         if let FddlValue::Boolean(b) = right_val {
                             Ok(FddlValue::Boolean(!b))
                         } else {
@@ -89,7 +158,7 @@ impl Evaluator {
                             ))
                         }
                     }
-                    Operator::Some => {
+                    Operator::Some => { 
                         Ok(right_val) 
                     }
                     Operator::Almost => {
@@ -106,26 +175,23 @@ impl Evaluator {
                         op
                     ))),
                 }
-            }
+            }, 
 
-            Expression::Binary(left_expr, op, right_expr) => { // Add this new arm
+            Expression::Binary(left_expr, op, right_expr) => {
                 let left_val = self.evaluate_expression(left_expr)?;
                 let right_val = self.evaluate_expression(right_expr)?;
 
-                // Now, perform the operation based on 'op' and the types of left_val and right_val
                 match op {
                     Operator::Plus => {
-                        // Example for addition (assuming numbers for now)
                         if let (FddlValue::Number(l), FddlValue::Number(r)) = (&left_val, &right_val) {
                             Ok(FddlValue::Number(l + r))
                         } else {
-                            // Later, you might allow string concatenation here
                             Err(RuntimeError::TypeMismatch(
                                 format!("Operands for '+' must be numbers. Got {:?} and {:?}", left_val, right_val)
                             ))
                         }
                     }
-                    Operator::Minus => { // Binary Minus
+                    Operator::Minus => {
                         if let (FddlValue::Number(l), FddlValue::Number(r)) = (&left_val, &right_val) {
                             Ok(FddlValue::Number(l - r))
                         } else {
@@ -146,7 +212,7 @@ impl Evaluator {
                     Operator::Divide => {
                         if let (FddlValue::Number(l), FddlValue::Number(r)) = (&left_val, &right_val) {
                             if *r == 0.0 {
-                                Err(RuntimeError::TypeMismatch("Division by zero.".to_string())) // Or a specific DivisionByZero error
+                                Err(RuntimeError::DivisionByZero) 
                             } else {
                                 Ok(FddlValue::Number(l / r))
                             }
@@ -156,10 +222,10 @@ impl Evaluator {
                             ))
                         }
                     }
-                    Operator::Modulus => { // Assuming you have Operator::Modulus from earlier
+                    Operator::Modulus => {
                         if let (FddlValue::Number(l), FddlValue::Number(r)) = (&left_val, &right_val) {
                             if *r == 0.0 {
-                                Err(RuntimeError::TypeMismatch("Modulus by zero.".to_string()))
+                                Err(RuntimeError::TypeMismatch("Modulus by zero.".to_string())) // Or DivisionByZero
                             } else {
                                 Ok(FddlValue::Number(l % r))
                             }
@@ -169,18 +235,16 @@ impl Evaluator {
                             ))
                         }
                     }
-                    // TODO: Add cases for Operator::Greater, Less, EqualEqual, NotEqual, And, Or etc.
-                    // These will typically operate on numbers or booleans and produce FddlValue::Boolean.
                     _ => Err(RuntimeError::TypeMismatch(format!(
                         "Unsupported binary operator {:?}.",
                         op
                     ))),
                 }
-            }
+            },
 
-            Expression::Grouping(inner_expr) => {
+            Expression::Grouping(inner_expr) => { 
                 self.evaluate_expression(inner_expr)
-            }
+            },
 
             _ => {
                 println!("Interpreter: Unimplemented expression: {:?}", expression);
