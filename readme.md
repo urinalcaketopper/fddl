@@ -130,7 +130,7 @@ print(`The square of $number is ${math.square($number)}`);
     -   [x] Execution of `PrintStatement` and `ExpressionStatement`.
     -   [ ] Implement evaluation for remaining unary operators (`not`, `some`, `~`).
     -   [ ] Implement evaluation for binary comparison (`<`, `<=`, `>`, `>=`), equality (`==`, `!=`), and logical (`and`, `or`) operators.
-    -   [x] **Environment for Variables**: Implement variable declaration (`let`), assignment (`=`), and lookup (`identifier`).
+    -   [x] **Environment for Variables**: Implement variable declaration (`let`), assignment (`=`), and lookup (`identifier`). (Partially working)
     -   [ ] **Control Flow Execution**: `if/else`, `while`, `for`.
     -   [ ] **Function Execution**: Handling function calls, parameter passing, environments/scopes, and `return` statements.
 -   **Compiler**:
