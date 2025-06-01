@@ -29,12 +29,21 @@ pub enum RuntimeError {
 
 pub struct Environment {
     values: HashMap<String, FddlValue>,
+    parent: Option<Box<Environment>>,
 }
 
 impl Environment {
     pub fn new() -> Self {
         Environment {
             values: HashMap::new(),
+            parent: None,
+        }
+    }
+
+    pub fn with_parent(parent: Environment) -> Self {
+        Environment{
+            values: HashMap::new(),
+            parent: Some(Box::new(parent)),
         }
     }
 
@@ -44,11 +53,14 @@ impl Environment {
 
     pub fn get(&self, name: &str) -> Result<FddlValue, RuntimeError> {
         match self.values.get(name) {
-            Some(value) => Ok(value.clone()), 
-            None => Err(RuntimeError::UndefinedVariable(format!(
-                "Undefined variable '{}'.",
-                name
-            ))),
+            Some(value) => Ok(value.clone()),
+            None => match &self.parent {
+                Some(parent_env) => parent_env.get(name),
+                None => Err(RuntimeError::UndefinedVariable(format!(
+                    "Variable '{}' is not defined.",
+                    name
+                ))),
+            },
         }
     }
 
