@@ -480,11 +480,10 @@ impl Parser {
             return None;
         }
 
-        // 1. Initializer Statement
-        self.skip_comments(); // Skip comments before initializer part
+        self.skip_comments();
         let initializer: Box<Statement>;
         if self.check(&Token::Let) {
-            self.advance(); // Consume 'let'
+            self.advance(); 
             let var_name = match self.peek_and_advance() {
                 Some(Token::Identifier(name_str)) => name_str,
                 _ => {
@@ -493,47 +492,45 @@ impl Parser {
                 }
             };
             let var_initializer_expr: Option<Expression> = if self.match_token(Token::Equal) {
-                self.skip_comments(); // Skip comments before the expression value
+                self.skip_comments(); 
                 self.parse_expression()
             } else {
                 None
             };
             initializer = Box::new(Statement::VariableDeclaration(var_name, var_initializer_expr));
-            self.skip_comments(); // Skip comments before the semicolon separator
+            self.skip_comments(); 
             if !self.match_token(Token::Semicolon) {
                 eprintln!("Error: Expected ';' after 'let' declaration in for-loop initializer.");
                 return None;
             }
         } else if self.check(&Token::Semicolon) { // Check for ';' for empty initializer
-            self.advance(); // Consume the ';'
+            self.advance(); 
             initializer = Box::new(Statement::ExpressionStatement(Expression::Literal(Literal::Nil)));
-        } else { // Expression initializer
+        } else { 
             let init_expr = self.parse_expression()?;
             initializer = Box::new(Statement::ExpressionStatement(init_expr));
-            self.skip_comments(); // Skip comments before the semicolon separator
+            self.skip_comments(); 
             if !self.match_token(Token::Semicolon) {
                 eprintln!("Error: Expected ';' after for-loop initializer expression.");
                 return None;
             }
         }
 
-        // 2. Condition Expression
-        self.skip_comments(); // Skip comments before condition part
+        self.skip_comments(); 
         let condition: Expression;
-        if self.check(&Token::Semicolon) { // Check for ';' for empty condition
-            self.advance(); // Consume the ';'
-            condition = Expression::Literal(Literal::Boolean(true)); // Default to true
+        if self.check(&Token::Semicolon) { 
+            self.advance(); 
+            condition = Expression::Literal(Literal::Boolean(true)); 
         } else {
             condition = self.parse_expression()?;
-            self.skip_comments(); // Skip comments before the semicolon separator
+            self.skip_comments(); 
             if !self.match_token(Token::Semicolon) {
                 eprintln!("Error: Expected ';' after for-loop condition.");
                 return None;
             }
         }
 
-        // 3. Increment Statement
-        self.skip_comments(); // <--- CRUCIAL FIX: Skip comments before increment part
+        self.skip_comments(); 
         let increment: Box<Statement> = if self.check(&Token::RightParen) {
             Box::new(Statement::ExpressionStatement(Expression::Literal(Literal::Nil)))
         } else {
@@ -541,19 +538,17 @@ impl Parser {
             Box::new(Statement::ExpressionStatement(incr_expr))
         };
 
-        self.skip_comments(); // Skip comments before ')'
+        self.skip_comments(); 
         if !self.match_token(Token::RightParen) {
             eprintln!("Error: Expected ')' after for-loop clauses.");
             return None;
         }
 
-        // 4. Body Statement (must be a block)
-        self.skip_comments(); // Skip comments before '{'
+        self.skip_comments();
         if !self.check(&Token::LeftBrace) {
             eprintln!("Error: Expected '{{' for for-loop body.");
             return None;
         }
-        // parse_statement() already calls skip_comments() at its beginning
         let body = Box::new(self.parse_statement()?);
 
         Some(Statement::ForStatement(initializer, condition, increment, body))
